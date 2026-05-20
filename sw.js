@@ -1,4 +1,4 @@
-const CACHE = 'findash-v6';
+const CACHE = 'findash-v7';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {

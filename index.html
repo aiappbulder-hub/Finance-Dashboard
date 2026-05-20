@@ -28,11 +28,11 @@
       --blue:#60a5fa;--purple:#a78bfa;
       --text:#dde4f0;--muted:#5a6a88;--dim:#1c2540;
       --mono:'Space Mono',monospace;--sans:'Outfit',sans-serif;
-      --ticker-h:32px;--nav-h:65px;
+      --nav-h:65px;
     }
     html,body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
     #app{max-width:480px;margin:0 auto;min-height:100dvh}
-    .page{padding:calc(env(safe-area-inset-top)+var(--ticker-h)+18px) 16px calc(var(--nav-h)+env(safe-area-inset-bottom)+20px);animation:fadeUp .22s ease}
+    .page{padding:calc(env(safe-area-inset-top)+18px) 16px calc(var(--nav-h)+env(safe-area-inset-bottom)+20px);animation:fadeUp .22s ease}
     @keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
     .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:calc(var(--nav-h)+env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(5,7,15,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100}
     .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 4px;transition:color .2s;-webkit-tap-highlight-color:transparent}
@@ -104,10 +104,6 @@
     @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
     .ldg-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1s ease infinite}
     ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
-    .ticker-wrap{position:fixed;top:env(safe-area-inset-top,0px);left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:var(--ticker-h);background:rgba(6,8,16,.98);border-bottom:1px solid var(--border);overflow:hidden;z-index:101;display:flex;align-items:center}
-    .ticker-item{display:inline-flex;align-items:center;gap:4px;padding:0 11px;border-right:1px solid var(--dim);font-family:var(--mono);font-size:10px;white-space:nowrap;flex-shrink:0}
-    @keyframes ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-    .ticker-anim{display:inline-flex;align-items:center;animation:ticker-scroll linear infinite}
   </style>
 </head>
 <body>
@@ -659,16 +655,71 @@ function TabProperties(p) {
 }
 
 // ─── TAB: INVEST ─────────────────────────────────────────────
+var CGIDS={BNB:'binancecoin',BTC:'bitcoin',ETH:'ethereum',SOL:'solana',XRP:'ripple',DOT:'polkadot',AVAX:'avalanche-2',DOGE:'dogecoin'};
+
 function TabInvest(p) {
   var s=p.s,c=p.c;
+  var _lp=useState({});var livePx=_lp[0],setLivePx=_lp[1];
+  var _ls=useState('loading');var liveStatus=_ls[0],setLiveStatus=_ls[1];
+  var _lt=useState(null);var lastUp=_lt[0],setLastUp=_lt[1];
+
+  function fetchLive(){
+    var cgIds=CRYPTO.map(function(coin){return CGIDS[coin.t];}).filter(Boolean).join(',');
+    var newPx={};var anyLive=false;
+    var cReq=fetch('https://api.coingecko.com/api/v3/simple/price?ids='+cgIds+'&vs_currencies=aud&include_24hr_change=true')
+      .then(function(r){return r.json();})
+      .then(function(d){
+        CRYPTO.forEach(function(coin){var id=CGIDS[coin.t];if(d[id]){newPx[coin.t]={price:d[id].aud,chg:d[id].aud_24h_change||0,live:true};anyLive=true;}});
+      }).catch(function(){});
+    var tickers=US.map(function(st){return{t:st.t,isUS:true};}).concat(ASX.map(function(st){return{t:st.t,isUS:false};}));
+    var sReqs=tickers.map(function(tk){
+      return fetch('https://query1.finance.yahoo.com/v8/finance/chart/'+tk.t+'?interval=1d&range=1d&includePrePost=false')
+        .then(function(r){return r.json();})
+        .then(function(d){
+          var m=((d.chart||{}).result||[{}])[0].meta||{};
+          if(m.regularMarketPrice){
+            var chg=m.previousClose?(m.regularMarketPrice-m.previousClose)/m.previousClose*100:0;
+            newPx[tk.t]={price:m.regularMarketPrice,chg:chg,live:true,usd:tk.isUS};anyLive=true;
+          }
+        }).catch(function(){});
+    });
+    Promise.all([cReq].concat(sReqs)).then(function(){
+      setLivePx(newPx);
+      setLiveStatus(anyLive?'live':'offline');
+      if(anyLive)setLastUp(new Date());
+    });
+  }
+  useEffect(function(){fetchLive();var iv=setInterval(fetchLive,300000);return function(){clearInterval(iv);};},[]);
+
+  function liveVal(ticker,qty,audusd){
+    var lp=livePx[ticker];
+    if(!lp||!lp.live)return null;
+    return lp.usd?(lp.price*qty/audusd):(lp.price*qty);
+  }
+  function liveRow(ticker){return livePx[ticker]&&livePx[ticker].live?livePx[ticker]:null;}
+
+  var statusLabel=liveStatus==='loading'?'Fetching live prices…':liveStatus==='live'?('Live · '+lastUp.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})):'Offline · showing last known';
+  var statusCol=liveStatus==='live'?'var(--green)':liveStatus==='loading'?'var(--muted)':'var(--gold)';
+
+  var usTotal=US.reduce(function(a,st){var v=liveVal(st.t,st.qty,s.audusd);return a+(v!==null?v:st.u/s.audusd);},0);
+  var asxTotal=ASX.reduce(function(a,st){var v=liveVal(st.t,st.qty,s.audusd);return a+(v!==null?v:st.v);},0);
+  var cryptoTotal=CRYPTO.reduce(function(a,coin){var v=liveVal(coin.t,coin.qty,s.audusd);return a+(v!==null?v:coin.v);},0);
+
   return html`
     <div class="page">
-      <div class="page-title">Investments</div>
+      <div class="fb" style="margin-bottom:14px">
+        <div class="page-title" style="margin-bottom:0">Investments</div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <div style="width:6px;height:6px;border-radius:50%;background:${statusCol};${liveStatus==='live'?'animation:pulse 2s ease infinite':''}"></div>
+          <span style="font-size:10px;color:${statusCol};font-weight:600">${statusLabel}</span>
+        </div>
+      </div>
+
       <div class="card">
         <div class="lbl" style="margin-bottom:10px">TOTAL PORTFOLIO BREAKDOWN</div>
-        <${DonutChart} segs=${[{l:'Superannuation',v:s.superBal,c:'#60a5fa'},{l:'US Stocks',v:c.usA,c:'#f0b429'},{l:'ASX Shares',v:s.asxP+s.asxT,c:'#34d399'},{l:'Crypto',v:s.crypto,c:'#a78bfa'}]} />
+        <${DonutChart} segs=${[{l:'Superannuation',v:s.superBal,c:'#60a5fa'},{l:'US Stocks',v:usTotal,c:'#f0b429'},{l:'ASX Shares',v:asxTotal,c:'#34d399'},{l:'Crypto',v:cryptoTotal,c:'#a78bfa'}]} />
         <div class="div" style="margin:10px 0"></div>
-        <div class="fb"><div class="lbl">TOTAL (EX-PROPERTY)</div><div style="font-family:var(--mono);font-size:15px;color:var(--gold);font-weight:700">${ff(s.superBal+c.inv)}</div></div>
+        <div class="fb"><div class="lbl">TOTAL (EX-PROPERTY)</div><div style="font-family:var(--mono);font-size:15px;color:var(--gold);font-weight:700">${ff(s.superBal+usTotal+asxTotal+cryptoTotal)}</div></div>
       </div>
 
       <div class="sec">Superannuation</div>
@@ -685,34 +736,49 @@ function TabInvest(p) {
         </div>
       </div>
 
-      <div class="sec">US Stocks <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0">AUD@${s.audusd} · 14 May 2026</span></div>
+      <div class="sec">US Stocks <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0">AUD@${s.audusd}</span></div>
       <div class="card">
-        ${US.map(function(st){return html`<div class="inv-row">
-          <div style="display:flex;align-items:center;gap:8px;flex:1"><span class="tkr">${st.t}</span><div><div style="font-size:13px;font-weight:600">${st.n}</div><div style="font-size:10px;color:var(--muted)">${st.qty} shares</div></div></div>
-          <div style="text-align:right;flex-shrink:0"><div class="sm-num">${ff(st.u/s.audusd)}</div><div style="font-size:10px;color:${cc(st.g)}">${pc(st.g)}</div></div>
-        </div>`;})
-        }
-        <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border)"><span style="font-size:11px;color:var(--muted)">USD ${ff(s.usUSD)}</span><span class="sm-num" style="color:var(--gold)">AUD ${ff(c.usA)}</span></div>
+        ${US.map(function(st){
+          var lr=liveRow(st.t);
+          var val=lr?(lr.price*st.qty/s.audusd):(st.u/s.audusd);
+          var chg=lr?lr.chg:st.g;
+          var sub=lr?('US$'+lr.price.toFixed(2)+' · '+st.qty+' shares'):(st.qty+' shares');
+          return html`<div class="inv-row">
+            <div style="display:flex;align-items:center;gap:8px;flex:1"><span class="tkr">${st.t}</span><div><div style="font-size:13px;font-weight:600">${st.n}</div><div style="font-size:10px;color:var(--muted)">${sub}</div></div></div>
+            <div style="text-align:right;flex-shrink:0"><div class="sm-num">${ff(val)}</div><div style="font-size:10px;color:${cc(chg)}">${pc(chg)}${lr?' 24h':''}</div></div>
+          </div>`;
+        })}
+        <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border)"><span class="sm-num" style="color:var(--gold)">AUD ${ff(usTotal)}</span></div>
       </div>
 
-      <div class="sec">ASX Holdings · 14 May 2026</div>
+      <div class="sec">ASX Holdings</div>
       <div class="card">
-        ${ASX.map(function(st){return html`<div class="inv-row">
-          <div style="display:flex;align-items:center;gap:8px;flex:1"><span class="tkr">${st.t}</span><div><div style="font-size:13px;font-weight:600">${st.n}</div><div style="font-size:10px;color:var(--muted)">${st.qty}@$${st.px}${st.trust?' · Trust':''}</div></div></div>
-          <div style="text-align:right"><div class="sm-num">${ff(st.v)}</div><div style="font-size:10px;color:${cc(st.g)}">${pc(st.g)}</div></div>
-        </div>`;})
-        }
-        <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border)"><span class="sm-num" style="color:var(--gold)">Total ${ff(s.asxP+s.asxT)}</span></div>
+        ${ASX.map(function(st){
+          var lr=liveRow(st.t);
+          var val=lr?(lr.price*st.qty):st.v;
+          var chg=lr?lr.chg:0;
+          var sub=lr?('$'+lr.price.toFixed(2)+' · '+st.qty+' shares'+(st.trust?' · Trust':'')):(st.qty+'@$'+st.px+(st.trust?' · Trust':''));
+          return html`<div class="inv-row">
+            <div style="display:flex;align-items:center;gap:8px;flex:1"><span class="tkr">${st.t}</span><div><div style="font-size:13px;font-weight:600">${st.n}</div><div style="font-size:10px;color:var(--muted)">${sub}</div></div></div>
+            <div style="text-align:right"><div class="sm-num">${ff(val)}</div><div style="font-size:10px;color:${cc(chg)}">${pc(chg)}${lr?' 24h':''}</div></div>
+          </div>`;
+        })}
+        <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border)"><span class="sm-num" style="color:var(--gold)">Total ${ff(asxTotal)}</span></div>
       </div>
 
-      <div class="sec">Crypto · 14 May 2026</div>
+      <div class="sec">Crypto</div>
       <div class="card">
-        ${CRYPTO.map(function(coin){return html`<div class="inv-row">
-          <div style="display:flex;align-items:center;gap:8px;flex:1"><span class="tkr">${coin.t}</span><div><div style="font-size:13px;font-weight:600">${coin.n}</div><div style="font-size:10px;color:var(--muted)">${coin.qty} tokens</div></div></div>
-          <div style="text-align:right"><div class="sm-num">${ff(coin.v)}</div><div style="font-size:10px;color:${cc(coin.g)}">${pc(coin.g)}</div></div>
-        </div>`;})
-        }
-        <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border)"><span class="sm-num" style="color:var(--gold)">Total ${ff(s.crypto)}</span></div>
+        ${CRYPTO.map(function(coin){
+          var lr=liveRow(coin.t);
+          var val=lr?(lr.price*coin.qty):coin.v;
+          var chg=lr?lr.chg:coin.g;
+          var sub=lr?(coin.qty+' · $'+lr.price.toLocaleString('en-AU',{maximumFractionDigits:2})+' ea'):(coin.qty+' tokens');
+          return html`<div class="inv-row">
+            <div style="display:flex;align-items:center;gap:8px;flex:1"><span class="tkr">${coin.t}</span><div><div style="font-size:13px;font-weight:600">${coin.n}</div><div style="font-size:10px;color:var(--muted)">${sub}</div></div></div>
+            <div style="text-align:right"><div class="sm-num">${ff(val)}</div><div style="font-size:10px;color:${cc(chg)}">${pc(chg)}${lr?' 24h':''}</div></div>
+          </div>`;
+        })}
+        <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border)"><span class="sm-num" style="color:var(--gold)">Total ${ff(cryptoTotal)}</span></div>
       </div>
     </div>`;
 }
@@ -812,74 +878,6 @@ function TabForecast(p) {
     </div>`;
 }
 
-// ─── LIVE TICKER ─────────────────────────────────────────────
-var CGIDS={BNB:'binancecoin',BTC:'bitcoin',ETH:'ethereum',SOL:'solana',XRP:'ripple',DOT:'polkadot',AVAX:'avalanche-2',DOGE:'dogecoin'};
-
-function LiveTicker(){
-  var _p=useState({});var prices=_p[0],setPrices=_p[1];
-  var _s=useState('loading');var liveStatus=_s[0],setLiveStatus=_s[1];
-  function fetchPrices(){
-    var cgIds=CRYPTO.map(function(c){return CGIDS[c.t];}).filter(Boolean).join(',');
-    var newP={};var anyLive=false;
-    var cReq=fetch('https://api.coingecko.com/api/v3/simple/price?ids='+cgIds+'&vs_currencies=aud&include_24hr_change=true')
-      .then(function(r){return r.json();})
-      .then(function(d){
-        CRYPTO.forEach(function(c){var id=CGIDS[c.t];if(d[id]){newP[c.t]={price:d[id].aud,chg:d[id].aud_24h_change||0,live:true};anyLive=true;}});
-      }).catch(function(){});
-    var tickers=US.map(function(s){return{t:s.t,isUS:true};}).concat(ASX.map(function(s){return{t:s.t,isUS:false};}));
-    var sReqs=tickers.map(function(tk){
-      return fetch('https://query1.finance.yahoo.com/v8/finance/chart/'+tk.t+'?interval=1d&range=1d&includePrePost=false')
-        .then(function(r){return r.json();})
-        .then(function(d){
-          var m=((d.chart||{}).result||[{}])[0].meta||{};
-          if(m.regularMarketPrice){
-            var chg=m.previousClose?(m.regularMarketPrice-m.previousClose)/m.previousClose*100:0;
-            newP[tk.t]={price:m.regularMarketPrice,chg:chg,live:true,usd:tk.isUS};anyLive=true;
-          }
-        }).catch(function(){});
-    });
-    Promise.all([cReq].concat(sReqs)).then(function(){
-      US.forEach(function(s){if(!newP[s.t])newP[s.t]={price:s.u/s.qty,chg:0,live:false,usd:true};});
-      ASX.forEach(function(s){if(!newP[s.t])newP[s.t]={price:s.px,chg:0,live:false,usd:false};});
-      CRYPTO.forEach(function(c){if(!newP[c.t])newP[c.t]={price:c.v/c.qty,chg:0,live:false};});
-      setPrices(newP);setLiveStatus(anyLive?'live':'approx');
-    });
-  }
-  useEffect(function(){fetchPrices();var iv=setInterval(fetchPrices,120000);return function(){clearInterval(iv);};},[]);
-  function fmt(px){
-    var v=px.price;
-    if(px.usd)return'US$'+v.toFixed(2);
-    if(v>=10000)return'$'+Math.round(v).toLocaleString('en-AU');
-    if(v>=1)return'$'+v.toFixed(2);
-    return'$'+v.toFixed(4);
-  }
-  var ready=Object.keys(prices).length>0;
-  if(!ready)return html`<div class="ticker-wrap" style="justify-content:center"><span style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em">LOADING…</span></div>`;
-  var items=[];
-  US.forEach(function(s){items.push({sym:s.t,px:prices[s.t]});});
-  ASX.forEach(function(s){items.push({sym:s.t.replace('.AX',''),px:prices[s.t]});});
-  CRYPTO.forEach(function(c){items.push({sym:c.t,px:prices[c.t]});});
-  var all=items.concat(items);
-  var dotCol=liveStatus==='live'?'var(--green)':'var(--gold)';
-  var dur=(items.length*3)+'s';
-  return html`<div class="ticker-wrap">
-    <div style="width:5px;height:5px;border-radius:50%;flex-shrink:0;margin:0 6px 0 8px;background:${dotCol};${liveStatus==='live'?'animation:pulse 1.5s ease infinite':''}"></div>
-    <div style="flex:1;overflow:hidden">
-      <div class="ticker-anim" style="animation-duration:${dur}">
-        ${all.map(function(it,i){
-          var px=it.px;var up=px&&px.chg>=0;
-          var col=px&&px.live?(up?'var(--green)':'var(--red)'):'var(--muted)';
-          return html`<span key=${i} class="ticker-item">
-            <span style="color:var(--muted);font-size:9px">${it.sym}</span>
-            <span style="color:var(--text)">${px?((!px.live?'~':'')+fmt(px)):'…'}</span>
-            ${px&&px.live&&html`<span style="color:${col};font-size:9px">${up?'▲':'▼'}${Math.abs(px.chg).toFixed(1)}%</span>`}
-          </span>`;
-        })}
-      </div>
-    </div>
-  </div>`;
-}
-
 // ─── APP ROOT ─────────────────────────────────────────────────
 var TABS = [
   {id:'overview',  icon:'◈',label:'Overview'},
@@ -910,7 +908,6 @@ function App() {
   }
   return html`
     <div>
-      <${LiveTicker} />
       <div key=${tab}>${renderTab()}</div>
       <nav class="nav">
         ${TABS.map(function(t){
