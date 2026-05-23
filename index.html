@@ -37,8 +37,8 @@
     .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:calc(var(--nav-h)+env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(5,7,15,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100}
     .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 4px;transition:color .2s;-webkit-tap-highlight-color:transparent}
     .nav-btn.active{color:var(--gold)}
-    .nav-icon{font-size:18px;line-height:1}
-    .nav-label{font-size:10px;font-weight:600;letter-spacing:.03em}
+    .nav-icon{font-size:16px;line-height:1}
+    .nav-label{font-size:9px;font-weight:600;letter-spacing:.03em}
     .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px}
     .card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px}
     .page-title{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
@@ -104,6 +104,25 @@
     @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
     .ldg-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1s ease infinite}
     ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+    /* ─── Travel Tab ─────────────────────────────────────────── */
+    .tr-search{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:13px;padding:9px 12px;margin-bottom:12px;-webkit-appearance:none}
+    .tr-search:focus{outline:none;border-color:var(--gold)}
+    .tr-search::placeholder{color:var(--muted)}
+    .tr-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:4px}
+    .tr-tile{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px 4px 6px;text-align:center;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
+    .tr-tile:active{opacity:.7;transform:scale(.95)}
+    .tr-tile.visited{background:var(--green-bg);border-color:rgba(52,211,153,.4)}
+    .tr-tile.wishlist{background:var(--gold-bg);border-color:rgba(240,180,41,.3)}
+    .tr-flag{font-size:20px;line-height:1;display:block;margin-bottom:3px}
+    .tr-name{font-size:8px;color:var(--muted);font-weight:600;letter-spacing:.02em;line-height:1.2;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    .tr-tile.visited .tr-name{color:var(--green)}
+    .tr-tile.wishlist .tr-name{color:var(--gold)}
+    .tr-dot{position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%}
+    .tr-dot.visited{background:var(--green)}
+    .tr-dot.wishlist{background:var(--gold)}
+    .tr-prg{background:var(--bg3);border-radius:6px;height:5px;overflow:hidden;margin:4px 0 10px;display:flex}
+    .tr-prg-v{height:100%;background:var(--green);transition:width .4s}
+    .tr-prg-w{height:100%;background:var(--gold);opacity:.6;transition:width .4s}
   </style>
 </head>
 <body>
@@ -183,7 +202,8 @@ var DEFAULT = {
   superBal:351000, superContrib:11155, superGrow:7.0,
   usUSD:38042, audusd:0.634,
   asxP:11507, asxT:6270, crypto:28496, invGrow:7.0,
-  props: PROPS_RAW.map(function(p){return Object.assign({},p,{snaps:seedSnaps(p)});})
+  props: PROPS_RAW.map(function(p){return Object.assign({},p,{snaps:seedSnaps(p)});}),
+  travel: { visited: [], wishlist: [] }
 };
 
 // Holdings from CSV exports — 14 May 2026
@@ -878,6 +898,195 @@ function TabForecast(p) {
     </div>`;
 }
 
+// ─── TAB: TRAVEL ─────────────────────────────────────────────
+var COUNTRIES = [
+  ['AF','Afghanistan','AS','🇦🇫'],['AL','Albania','EU','🇦🇱'],['DZ','Algeria','AF','🇩🇿'],
+  ['AD','Andorra','EU','🇦🇩'],['AO','Angola','AF','🇦🇴'],['AG','Antigua & Barbuda','NA','🇦🇬'],
+  ['AR','Argentina','SA','🇦🇷'],['AM','Armenia','AS','🇦🇲'],['AU','Australia','OC','🇦🇺'],
+  ['AT','Austria','EU','🇦🇹'],['AZ','Azerbaijan','AS','🇦🇿'],['BS','Bahamas','NA','🇧🇸'],
+  ['BH','Bahrain','AS','🇧🇭'],['BD','Bangladesh','AS','🇧🇩'],['BB','Barbados','NA','🇧🇧'],
+  ['BY','Belarus','EU','🇧🇾'],['BE','Belgium','EU','🇧🇪'],['BZ','Belize','NA','🇧🇿'],
+  ['BJ','Benin','AF','🇧🇯'],['BT','Bhutan','AS','🇧🇹'],['BO','Bolivia','SA','🇧🇴'],
+  ['BA','Bosnia & Herzegovina','EU','🇧🇦'],['BW','Botswana','AF','🇧🇼'],['BR','Brazil','SA','🇧🇷'],
+  ['BN','Brunei','AS','🇧🇳'],['BG','Bulgaria','EU','🇧🇬'],['BF','Burkina Faso','AF','🇧🇫'],
+  ['BI','Burundi','AF','🇧🇮'],['CV','Cabo Verde','AF','🇨🇻'],['KH','Cambodia','AS','🇰🇭'],
+  ['CM','Cameroon','AF','🇨🇲'],['CA','Canada','NA','🇨🇦'],['CF','Central African Rep.','AF','🇨🇫'],
+  ['TD','Chad','AF','🇹🇩'],['CL','Chile','SA','🇨🇱'],['CN','China','AS','🇨🇳'],
+  ['CO','Colombia','SA','🇨🇴'],['KM','Comoros','AF','🇰🇲'],['CG','Congo','AF','🇨🇬'],
+  ['CD','Congo (DRC)','AF','🇨🇩'],['CR','Costa Rica','NA','🇨🇷'],["CI","Côte d'Ivoire",'AF','🇨🇮'],
+  ['HR','Croatia','EU','🇭🇷'],['CU','Cuba','NA','🇨🇺'],['CY','Cyprus','EU','🇨🇾'],
+  ['CZ','Czechia','EU','🇨🇿'],['DK','Denmark','EU','🇩🇰'],['DJ','Djibouti','AF','🇩🇯'],
+  ['DM','Dominica','NA','🇩🇲'],['DO','Dominican Rep.','NA','🇩🇴'],['EC','Ecuador','SA','🇪🇨'],
+  ['EG','Egypt','AF','🇪🇬'],['SV','El Salvador','NA','🇸🇻'],['GQ','Equatorial Guinea','AF','🇬🇶'],
+  ['ER','Eritrea','AF','🇪🇷'],['EE','Estonia','EU','🇪🇪'],['SZ','Eswatini','AF','🇸🇿'],
+  ['ET','Ethiopia','AF','🇪🇹'],['FJ','Fiji','OC','🇫🇯'],['FI','Finland','EU','🇫🇮'],
+  ['FR','France','EU','🇫🇷'],['GA','Gabon','AF','🇬🇦'],['GM','Gambia','AF','🇬🇲'],
+  ['GE','Georgia','AS','🇬🇪'],['DE','Germany','EU','🇩🇪'],['GH','Ghana','AF','🇬🇭'],
+  ['GR','Greece','EU','🇬🇷'],['GD','Grenada','NA','🇬🇩'],['GT','Guatemala','NA','🇬🇹'],
+  ['GN','Guinea','AF','🇬🇳'],['GW','Guinea-Bissau','AF','🇬🇼'],['GY','Guyana','SA','🇬🇾'],
+  ['HT','Haiti','NA','🇭🇹'],['HN','Honduras','NA','🇭🇳'],['HU','Hungary','EU','🇭🇺'],
+  ['IS','Iceland','EU','🇮🇸'],['IN','India','AS','🇮🇳'],['ID','Indonesia','AS','🇮🇩'],
+  ['IR','Iran','AS','🇮🇷'],['IQ','Iraq','AS','🇮🇶'],['IE','Ireland','EU','🇮🇪'],
+  ['IL','Israel','AS','🇮🇱'],['IT','Italy','EU','🇮🇹'],['JM','Jamaica','NA','🇯🇲'],
+  ['JP','Japan','AS','🇯🇵'],['JO','Jordan','AS','🇯🇴'],['KZ','Kazakhstan','AS','🇰🇿'],
+  ['KE','Kenya','AF','🇰🇪'],['KI','Kiribati','OC','🇰🇮'],['KP','North Korea','AS','🇰🇵'],
+  ['KR','South Korea','AS','🇰🇷'],['KW','Kuwait','AS','🇰🇼'],['KG','Kyrgyzstan','AS','🇰🇬'],
+  ['LA','Laos','AS','🇱🇦'],['LV','Latvia','EU','🇱🇻'],['LB','Lebanon','AS','🇱🇧'],
+  ['LS','Lesotho','AF','🇱🇸'],['LR','Liberia','AF','🇱🇷'],['LY','Libya','AF','🇱🇾'],
+  ['LI','Liechtenstein','EU','🇱🇮'],['LT','Lithuania','EU','🇱🇹'],['LU','Luxembourg','EU','🇱🇺'],
+  ['MG','Madagascar','AF','🇲🇬'],['MW','Malawi','AF','🇲🇼'],['MY','Malaysia','AS','🇲🇾'],
+  ['MV','Maldives','AS','🇲🇻'],['ML','Mali','AF','🇲🇱'],['MT','Malta','EU','🇲🇹'],
+  ['MH','Marshall Islands','OC','🇲🇭'],['MR','Mauritania','AF','🇲🇷'],['MU','Mauritius','AF','🇲🇺'],
+  ['MX','Mexico','NA','🇲🇽'],['FM','Micronesia','OC','🇫🇲'],['MD','Moldova','EU','🇲🇩'],
+  ['MC','Monaco','EU','🇲🇨'],['MN','Mongolia','AS','🇲🇳'],['ME','Montenegro','EU','🇲🇪'],
+  ['MA','Morocco','AF','🇲🇦'],['MZ','Mozambique','AF','🇲🇿'],['MM','Myanmar','AS','🇲🇲'],
+  ['NA','Namibia','AF','🇳🇦'],['NR','Nauru','OC','🇳🇷'],['NP','Nepal','AS','🇳🇵'],
+  ['NL','Netherlands','EU','🇳🇱'],['NZ','New Zealand','OC','🇳🇿'],['NI','Nicaragua','NA','🇳🇮'],
+  ['NE','Niger','AF','🇳🇪'],['NG','Nigeria','AF','🇳🇬'],['MK','North Macedonia','EU','🇲🇰'],
+  ['NO','Norway','EU','🇳🇴'],['OM','Oman','AS','🇴🇲'],['PK','Pakistan','AS','🇵🇰'],
+  ['PW','Palau','OC','🇵🇼'],['PA','Panama','NA','🇵🇦'],['PG','Papua New Guinea','OC','🇵🇬'],
+  ['PY','Paraguay','SA','🇵🇾'],['PE','Peru','SA','🇵🇪'],['PH','Philippines','AS','🇵🇭'],
+  ['PL','Poland','EU','🇵🇱'],['PT','Portugal','EU','🇵🇹'],['QA','Qatar','AS','🇶🇦'],
+  ['RO','Romania','EU','🇷🇴'],['RU','Russia','EU','🇷🇺'],['RW','Rwanda','AF','🇷🇼'],
+  ['KN','Saint Kitts & Nevis','NA','🇰🇳'],['LC','Saint Lucia','NA','🇱🇨'],
+  ['VC','St Vincent & Grenadines','NA','🇻🇨'],['WS','Samoa','OC','🇼🇸'],
+  ['SM','San Marino','EU','🇸🇲'],['ST','São Tomé & Príncipe','AF','🇸🇹'],
+  ['SA','Saudi Arabia','AS','🇸🇦'],['SN','Senegal','AF','🇸🇳'],['RS','Serbia','EU','🇷🇸'],
+  ['SC','Seychelles','AF','🇸🇨'],['SL','Sierra Leone','AF','🇸🇱'],['SG','Singapore','AS','🇸🇬'],
+  ['SK','Slovakia','EU','🇸🇰'],['SI','Slovenia','EU','🇸🇮'],['SB','Solomon Islands','OC','🇸🇧'],
+  ['SO','Somalia','AF','🇸🇴'],['ZA','South Africa','AF','🇿🇦'],['SS','South Sudan','AF','🇸🇸'],
+  ['ES','Spain','EU','🇪🇸'],['LK','Sri Lanka','AS','🇱🇰'],['SD','Sudan','AF','🇸🇩'],
+  ['SR','Suriname','SA','🇸🇷'],['SE','Sweden','EU','🇸🇪'],['CH','Switzerland','EU','🇨🇭'],
+  ['SY','Syria','AS','🇸🇾'],['TW','Taiwan','AS','🇹🇼'],['TJ','Tajikistan','AS','🇹🇯'],
+  ['TZ','Tanzania','AF','🇹🇿'],['TH','Thailand','AS','🇹🇭'],['TL','Timor-Leste','AS','🇹🇱'],
+  ['TG','Togo','AF','🇹🇬'],['TO','Tonga','OC','🇹🇴'],['TT','Trinidad & Tobago','NA','🇹🇹'],
+  ['TN','Tunisia','AF','🇹🇳'],['TR','Turkey','AS','🇹🇷'],['TM','Turkmenistan','AS','🇹🇲'],
+  ['TV','Tuvalu','OC','🇹🇻'],['UG','Uganda','AF','🇺🇬'],['UA','Ukraine','EU','🇺🇦'],
+  ['AE','UAE','AS','🇦🇪'],['GB','United Kingdom','EU','🇬🇧'],['US','United States','NA','🇺🇸'],
+  ['UY','Uruguay','SA','🇺🇾'],['UZ','Uzbekistan','AS','🇺🇿'],['VU','Vanuatu','OC','🇻🇺'],
+  ['VE','Venezuela','SA','🇻🇪'],['VN','Vietnam','AS','🇻🇳'],['YE','Yemen','AS','🇾🇪'],
+  ['ZM','Zambia','AF','🇿🇲'],['ZW','Zimbabwe','AF','🇿🇼'],
+];
+var CONTINENTS = {AF:'Africa',AS:'Asia',EU:'Europe',NA:'Americas',SA:'South America',OC:'Oceania'};
+var CONT_ORDER = ['EU','AS','AF','NA','SA','OC'];
+
+function TabTravel(p) {
+  var s=p.s, setS=p.setS;
+  var qs=useState(''); var q=qs[0],setQ=qs[1];
+  var vs=useState('all'); var view=vs[0],setView=vs[1];
+
+  var visitedSet={}, wishlistSet={};
+  (s.travel.visited||[]).forEach(function(c){visitedSet[c]=true;});
+  (s.travel.wishlist||[]).forEach(function(c){wishlistSet[c]=true;});
+
+  function toggle(code) {
+    var v=(s.travel.visited||[]).slice(), w=(s.travel.wishlist||[]).slice();
+    var inV=visitedSet[code], inW=wishlistSet[code];
+    if(!inV&&!inW)       { v.push(code); }
+    else if(inV)         { v=v.filter(function(c){return c!==code;}); w.push(code); }
+    else                 { w=w.filter(function(c){return c!==code;}); }
+    var next=Object.assign({},s,{travel:{visited:v,wishlist:w}});
+    localStorage.setItem(SKEY,JSON.stringify(next)); setS(next);
+  }
+
+  var cStats={};
+  COUNTRIES.forEach(function(r){
+    var co=r[2];
+    if(!cStats[co]) cStats[co]={total:0,visited:0,wishlist:0};
+    cStats[co].total++;
+    if(visitedSet[r[0]]) cStats[co].visited++;
+    if(wishlistSet[r[0]]) cStats[co].wishlist++;
+  });
+  var totalV=(s.travel.visited||[]).length;
+  var totalW=(s.travel.wishlist||[]).length;
+  var pct=(totalV/COUNTRIES.length*100).toFixed(1);
+  var contsV=CONT_ORDER.filter(function(k){return cStats[k]&&cStats[k].visited>0;}).length;
+
+  var lq=q.toLowerCase();
+  var filtered=COUNTRIES.filter(function(r){
+    var mq=!lq||(r[1].toLowerCase().indexOf(lq)>-1);
+    var mv=view==='all'||(view==='visited'&&visitedSet[r[0]])||(view==='wishlist'&&wishlistSet[r[0]]);
+    return mq&&mv;
+  });
+  var grouped={};
+  filtered.forEach(function(r){
+    if(!grouped[r[2]]) grouped[r[2]]=[];
+    grouped[r[2]].push(r);
+  });
+
+  return html`
+    <div class="page">
+      <div class="page-title">✈ Travel</div>
+
+      <div class="g2" style="margin-bottom:10px">
+        <div class="card-sm" style="text-align:center">
+          <div style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--green);line-height:1">${totalV}</div>
+          <div class="lbl" style="margin-top:4px">Countries Visited</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${pct}% of world · ${contsV} continent${contsV!==1?'s':''}</div>
+        </div>
+        <div class="card-sm" style="text-align:center">
+          <div style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--gold);line-height:1">${totalW}</div>
+          <div class="lbl" style="margin-top:4px">Wishlist</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">Countries to visit</div>
+        </div>
+      </div>
+
+      <div class="sec">Progress by Continent</div>
+      <div class="card" style="padding:14px 14px 6px">
+        ${CONT_ORDER.map(function(k){
+          var cs=cStats[k]||{total:0,visited:0,wishlist:0};
+          var pv=cs.total?(cs.visited/cs.total*100).toFixed(1):0;
+          var pw=cs.total?(cs.wishlist/cs.total*100).toFixed(1):0;
+          return html`<div style="margin-bottom:10px">
+            <div class="fb" style="margin-bottom:2px">
+              <span style="font-size:11px;font-weight:700">${CONTINENTS[k]}</span>
+              <span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${cs.visited}/${cs.total}</span>
+            </div>
+            <div class="tr-prg">
+              <div class="tr-prg-v" style="width:${pv}%"></div>
+              <div class="tr-prg-w" style="width:${pw}%"></div>
+            </div>
+          </div>`;
+        })}
+      </div>
+
+      <div class="pills">
+        ${[['all','All '+COUNTRIES.length],['visited','Visited '+totalV],['wishlist','Wishlist '+totalW]].map(function(opt){
+          return html`<button class=${'pill'+(view===opt[0]?' on':'')} onClick=${function(){setView(opt[0]);}}>${opt[1]}</button>`;
+        })}
+      </div>
+
+      <input class="tr-search" type="search" placeholder="Search countries…" value=${q} onInput=${function(e){setQ(e.target.value);}} />
+
+      ${CONT_ORDER.filter(function(k){return grouped[k]&&grouped[k].length;}).map(function(k){
+        return html`
+          <div class="sec">${CONTINENTS[k]}</div>
+          <div class="tr-grid">
+            ${grouped[k].map(function(r){
+              var code=r[0],name=r[1],flag=r[3];
+              var isV=visitedSet[code], isW=wishlistSet[code];
+              var cls='tr-tile'+(isV?' visited':isW?' wishlist':'');
+              return html`<div class=${cls} onClick=${function(){toggle(code);}}>
+                ${(isV||isW)&&html`<div class=${'tr-dot'+(isV?' visited':' wishlist')}></div>`}
+                <span class="tr-flag">${flag}</span>
+                <span class="tr-name">${name}</span>
+              </div>`;
+            })}
+          </div>`;
+      })}
+
+      ${filtered.length===0&&html`
+        <div style="text-align:center;padding:40px 20px;color:var(--muted)">
+          <div style="font-size:32px;margin-bottom:8px">🌍</div>
+          <div style="font-size:13px">No countries match "${q}"</div>
+        </div>`}
+
+      <div style="font-size:10px;color:var(--muted);text-align:center;padding:16px 0 4px">
+        Tap to cycle: none → visited → wishlist → none
+      </div>
+    </div>`;
+}
+
 // ─── APP ROOT ─────────────────────────────────────────────────
 var TABS = [
   {id:'overview',  icon:'◈',label:'Overview'},
@@ -885,10 +1094,11 @@ var TABS = [
   {id:'properties',icon:'⬡',label:'Properties'},
   {id:'invest',    icon:'◉',label:'Invest'},
   {id:'forecast',  icon:'◬',label:'Forecast'},
+  {id:'travel',    icon:'✈',label:'Travel'},
 ];
 
 function App() {
-  var ss=useState(function(){try{var d=JSON.parse(localStorage.getItem(SKEY));return d||DEFAULT;}catch(e){return DEFAULT;}});
+  var ss=useState(function(){try{var d=JSON.parse(localStorage.getItem(SKEY));if(!d)return DEFAULT;if(!d.travel)d.travel={visited:[],wishlist:[]};return d;}catch(e){return DEFAULT;}});
   var s=ss[0],setS=ss[1];
   var ts=useState('overview');var tab=ts[0],setTab=ts[1];
   var ips=useState(null);var ip=ips[0],setIp=ips[1];
@@ -905,6 +1115,7 @@ function App() {
     if(tab==='properties') return html`<${TabProperties}  s=${s} setS=${setS} />`;
     if(tab==='invest')     return html`<${TabInvest}      s=${s} c=${c} />`;
     if(tab==='forecast')   return html`<${TabForecast}    s=${s} setS=${setS} />`;
+    if(tab==='travel')     return html`<${TabTravel}      s=${s} setS=${setS} />`;
   }
   return html`
     <div>
