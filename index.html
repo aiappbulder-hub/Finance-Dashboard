@@ -35,18 +35,18 @@
     .page{padding:calc(env(safe-area-inset-top)+18px) 16px calc(var(--nav-h)+env(safe-area-inset-bottom)+20px);animation:fadeUp .22s ease}
     @keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
     .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:calc(var(--nav-h)+env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(5,7,15,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100}
-    .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 4px;transition:color .2s;-webkit-tap-highlight-color:transparent}
+    .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;padding:10px 2px;min-height:56px;transition:color .2s;-webkit-tap-highlight-color:transparent}
     .nav-btn.active{color:var(--gold)}
-    .nav-icon{font-size:16px;line-height:1}
-    .nav-label{font-size:9px;font-weight:600;letter-spacing:.03em}
+    .nav-icon{font-size:18px;line-height:1}
+    .nav-label{font-size:10px;font-weight:600;letter-spacing:.02em}
     .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px}
     .card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px}
     .page-title{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
-    .sec{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:18px 0 8px}
-    .big-num{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--gold);letter-spacing:-.02em;line-height:1}
-    .med-num{font-family:var(--mono);font-size:17px;font-weight:700;line-height:1}
+    .sec{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin:18px 0 8px}
+    .big-num{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--gold);letter-spacing:-.02em;line-height:1}
+    .med-num{font-family:var(--mono);font-size:18px;font-weight:700;line-height:1}
     .sm-num{font-family:var(--mono);font-size:13px;line-height:1}
-    .lbl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+    .lbl{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
     .tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:4px}
     .tag-gold{background:var(--gold-bg);color:var(--gold);border:1px solid rgba(240,180,41,.25)}
     .tag-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,.25)}
@@ -63,10 +63,10 @@
     .prg-f{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .5s}
     .nwbar{display:flex;height:5px;border-radius:4px;overflow:hidden;margin:10px 0 8px;gap:2px}
     .nwseg{height:100%;border-radius:2px}
-    .cdg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}
-    .cdu{background:var(--bg3);border-radius:10px;padding:8px 4px;text-align:center}
-    .cdn{font-family:var(--mono);font-size:19px;font-weight:700;color:var(--gold);line-height:1}
-    .cdl{font-size:9px;color:var(--muted);margin-top:2px;font-weight:600;letter-spacing:.06em}
+    .cdg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+    .cdu{background:var(--bg3);border-radius:10px;padding:10px 4px;text-align:center}
+    .cdn{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--gold);line-height:1}
+    .cdl{font-size:10px;color:var(--muted);margin-top:3px;font-weight:600;letter-spacing:.04em}
     .pills{display:flex;background:var(--bg3);border-radius:10px;padding:3px;gap:2px;margin-bottom:12px}
     .pill{flex:1;padding:7px 4px;border:none;background:none;color:var(--muted);border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
     .pill.on{background:var(--bg2);color:var(--gold);box-shadow:0 1px 6px rgba(0,0,0,.5)}
@@ -79,11 +79,11 @@
     .inv-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
     .inv-row:last-child{border-bottom:none}
     .tkr{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--bg3);border:1px solid var(--border2);color:var(--muted);padding:2px 6px;border-radius:4px}
-    .hwrap{overflow-x:auto;margin-top:10px;border-radius:10px;border:1px solid var(--border)}
-    .htbl{width:100%;border-collapse:collapse;min-width:360px}
-    .htbl th{color:var(--muted);font-weight:700;font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:8px;text-align:right;background:var(--bg3);border-bottom:1px solid var(--border);white-space:nowrap}
+    .hwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:10px;border-radius:10px;border:1px solid var(--border)}
+    .htbl{width:100%;border-collapse:collapse;min-width:300px}
+    .htbl th{color:var(--muted);font-weight:700;font-size:9px;letter-spacing:.03em;text-transform:uppercase;padding:8px 6px;text-align:right;background:var(--bg3);border-bottom:1px solid var(--border);white-space:nowrap}
     .htbl th:first-child{text-align:left}
-    .htbl td{padding:7px 8px;border-bottom:1px solid var(--dim);font-family:var(--mono);text-align:right;font-size:11px;white-space:nowrap}
+    .htbl td{padding:6px 6px;border-bottom:1px solid var(--dim);font-family:var(--mono);text-align:right;font-size:11px;white-space:nowrap}
     .htbl td:first-child{text-align:left;font-family:var(--sans);font-weight:600;font-size:11px;color:var(--muted)}
     .htbl tr:last-child td{border-bottom:none;color:var(--gold);font-weight:700}
     .htbl tr:last-child td:first-child{color:var(--gold)}
@@ -108,13 +108,13 @@
     .tr-search{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:13px;padding:9px 12px;margin-bottom:12px;-webkit-appearance:none}
     .tr-search:focus{outline:none;border-color:var(--gold)}
     .tr-search::placeholder{color:var(--muted)}
-    .tr-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:4px}
-    .tr-tile{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px 4px 6px;text-align:center;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
+    .tr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:4px}
+    .tr-tile{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 4px 8px;text-align:center;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
     .tr-tile:active{opacity:.7;transform:scale(.95)}
     .tr-tile.visited{background:var(--green-bg);border-color:rgba(52,211,153,.4)}
     .tr-tile.wishlist{background:var(--gold-bg);border-color:rgba(240,180,41,.3)}
-    .tr-flag{font-size:20px;line-height:1;display:block;margin-bottom:3px}
-    .tr-name{font-size:8px;color:var(--muted);font-weight:600;letter-spacing:.02em;line-height:1.2;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    .tr-flag{font-size:22px;line-height:1;display:block;margin-bottom:4px}
+    .tr-name{font-size:9px;color:var(--muted);font-weight:600;letter-spacing:.01em;line-height:1.2;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
     .tr-tile.visited .tr-name{color:var(--green)}
     .tr-tile.wishlist .tr-name{color:var(--gold)}
     .tr-dot{position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%}
@@ -139,6 +139,23 @@
     .pe-cl{background:var(--bg3);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-family:var(--sans);font-size:11px;cursor:pointer}
     .edit-ic{color:var(--muted);font-size:10px;cursor:pointer;padding:1px 4px;opacity:.45;-webkit-tap-highlight-color:transparent}
     .edit-ic:hover,.edit-ic:active{opacity:1}
+    /* ─── EOFY Modal ──────────────────────────────────────────── */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .modal-sheet{background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 16px calc(env(safe-area-inset-bottom)+20px);width:100%;max-width:480px;animation:slideUp .25s ease}
+    @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+    .modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+    /* ─── Refresh btn ─────────────────────────────────────────── */
+    .ref-btn{background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:var(--sans);font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .ref-btn:active{opacity:.7}
+    /* ─── Mobile responsive fixes ────────────────────────────── */
+    @media(max-width:390px){
+      .page{padding-left:12px;padding-right:12px}
+      .card{padding:14px}
+      .g3{grid-template-columns:1fr 1fr;gap:6px}
+      .g4{grid-template-columns:1fr 1fr;gap:6px}
+      .tr-grid{grid-template-columns:repeat(4,1fr);gap:4px}
+    }
   </style>
 </head>
 <body>
@@ -235,7 +252,7 @@ var CRYPTO = [
   {t:'DOGE',n:'Dogecoin',       v:48.44,   g:-48.25,qty:312},
 ];
 var US = [
-  {t:'TSLA',n:'Tesla',   u:31904.37,g:90.55, qty:52.0},
+  {t:'TSLA',n:'Tesla',   u:18200,   g:90.55, qty:52.0},
   {t:'PLTR',n:'Palantir',u:3611.95, g:548.46,qty:20.1},
   {t:'GOOG',n:'Alphabet',u:1741.63, g:157.37,qty:3.17},
   {t:'AAPL',n:'Apple',   u:412.47,  g:168.73,qty:1},
@@ -373,6 +390,7 @@ function TabOverview(p) {
   var now=new Date();
   var isEOFY=(now.getMonth()===5&&now.getFullYear()===2026);
   var eofyDays=isEOFY?Math.max(0,Math.round((new Date(2026,5,30)-now)/864e5)):0;
+  // p.onEOFY reopens the EOFY modal from App
   return html`
     <div class="page">
       <div class="fb" style="margin-bottom:16px">
@@ -389,17 +407,16 @@ function TabOverview(p) {
       ${ip && html`<div class="ib"><div><div style="font-size:13px;font-weight:800">📲 Install App</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Add to home screen</div></div><button class="ib-btn" onClick=${onI}>Install</button></div>`}
 
       ${isEOFY && html`
-        <div class="card" style="border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.05);padding:12px 14px">
-          <div class="fb" style="margin-bottom:8px">
-            <div style="font-size:13px;font-weight:800;color:var(--red)">⚠️ EOFY Action Required</div>
-            <span class="tag tag-red">${eofyDays}d left</span>
-          </div>
-          <div style="font-size:11px;line-height:1.7">
-            <div>🔴 <b>Insurance $2,576.72 due 30 June</b> — BPAY to Hollard</div>
-            <div style="font-size:10px;color:var(--muted);margin-bottom:4px">PLC000397030 ($1,137.79) + PLC000396819 ($1,438.93)</div>
-            <div>🟡 <b>$3,500 outstanding</b> with Hall & Partners — confirm before EOFY</div>
-            <div>🟡 <b>2/66 gas repair invoice</b> — immediate deduction if complete</div>
-            <div>🟡 <b>Split system depreciation</b> — $3,833 @ 20% DV, add to tax return</div>
+        <div class="card" style="border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.05);padding:12px 14px;cursor:pointer" onClick=${p.onEOFY}>
+          <div class="fb">
+            <div>
+              <div style="font-size:13px;font-weight:800;color:var(--red)">⚠ EOFY Action Required</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px">Insurance + invoices + depreciation — tap to review</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="tag tag-red">${eofyDays}d left</span>
+              <span style="color:var(--red);font-size:16px">›</span>
+            </div>
           </div>
         </div>`}
 
@@ -755,7 +772,9 @@ function TabInvest(p) {
   var _et=useState(null);var editTkr=_et[0],setEditTkr=_et[1];
   var _ev=useState('');var editVal=_ev[0],setEditVal=_ev[1];
 
+  var PCACHE_KEY='findash_pxcache';
   function fetchLive(){
+    setLiveStatus('loading');
     var cgIds=CRYPTO.map(function(coin){return CGIDS[coin.t];}).filter(Boolean).join(',');
     var newPx={};var anyLive=false;
     var cReq=fetch('https://api.coingecko.com/api/v3/simple/price?ids='+cgIds+'&vs_currencies=aud&include_24hr_change=true')
@@ -764,24 +783,42 @@ function TabInvest(p) {
         CRYPTO.forEach(function(coin){var id=CGIDS[coin.t];if(d[id]){newPx[coin.t]={price:d[id].aud,chg:d[id].aud_24h_change||0,live:true};anyLive=true;}});
       }).catch(function(){});
     var tickers=US.map(function(st){return{t:st.t,isUS:true};}).concat(ASX.map(function(st){return{t:st.t,isUS:false};}));
+    var endpoints=['https://query2.finance.yahoo.com/v8/finance/chart/','https://query1.finance.yahoo.com/v8/finance/chart/'];
     var sReqs=tickers.map(function(tk){
-      return fetch('https://query2.finance.yahoo.com/v8/finance/chart/'+tk.t+'?interval=1d&range=1d&includePrePost=false')
-        .then(function(r){return r.json();})
-        .then(function(d){
-          var m=((d.chart||{}).result||[{}])[0].meta||{};
-          if(m.regularMarketPrice){
-            var chg=m.previousClose?(m.regularMarketPrice-m.previousClose)/m.previousClose*100:0;
-            newPx[tk.t]={price:m.regularMarketPrice,chg:chg,live:true,usd:tk.isUS};anyLive=true;
-          }
-        }).catch(function(){});
+      function tryEndpoint(i){
+        if(i>=endpoints.length)return Promise.resolve();
+        return fetch(endpoints[i]+tk.t+'?interval=1d&range=1d&includePrePost=false')
+          .then(function(r){return r.json();})
+          .then(function(d){
+            var m=((d.chart||{}).result||[{}])[0].meta||{};
+            if(m.regularMarketPrice){
+              var chg=m.previousClose?(m.regularMarketPrice-m.previousClose)/m.previousClose*100:0;
+              newPx[tk.t]={price:m.regularMarketPrice,chg:chg,live:true,usd:tk.isUS};anyLive=true;
+            } else { return tryEndpoint(i+1); }
+          }).catch(function(){return tryEndpoint(i+1);});
+      }
+      return tryEndpoint(0);
     });
     Promise.all([cReq].concat(sReqs)).then(function(){
-      setLivePx(newPx);
-      setLiveStatus(anyLive?'live':'offline');
-      if(anyLive)setLastUp(new Date());
+      if(anyLive){
+        var now=new Date();
+        localStorage.setItem(PCACHE_KEY,JSON.stringify({px:newPx,ts:now.getTime()}));
+        setLivePx(newPx);setLiveStatus('live');setLastUp(now);
+      } else {
+        var cached=null;try{cached=JSON.parse(localStorage.getItem(PCACHE_KEY));}catch(e){}
+        if(cached&&cached.px){setLivePx(cached.px);setLastUp(new Date(cached.ts));setLiveStatus('cached');}
+        else setLiveStatus('offline');
+      }
     });
   }
-  useEffect(function(){fetchLive();var iv=setInterval(fetchLive,300000);return function(){clearInterval(iv);};},[]);
+  useEffect(function(){
+    var cached=null;try{cached=JSON.parse(localStorage.getItem(PCACHE_KEY));}catch(e){}
+    if(cached&&cached.px&&(Date.now()-cached.ts)<7*24*3600*1000){
+      setLivePx(cached.px);setLastUp(new Date(cached.ts));setLiveStatus('cached');
+    }
+    fetchLive();
+    var iv=setInterval(fetchLive,300000);return function(){clearInterval(iv);};
+  },[]);
 
   function liveVal(ticker,qty,audusd){
     var lp=livePx[ticker];if(!lp||!lp.live)return null;
@@ -799,8 +836,8 @@ function TabInvest(p) {
   }
   function startEdit(ticker,curVal){setEditTkr(ticker);setEditVal(String(Math.round(curVal)));}
 
-  var statusLabel=liveStatus==='loading'?'Fetching…':liveStatus==='live'?('Live · '+lastUp.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})):'Stocks offline · manual ok';
-  var statusCol=liveStatus==='live'?'var(--green)':liveStatus==='loading'?'var(--muted)':'var(--gold)';
+  var statusLabel=liveStatus==='loading'?'Fetching…':liveStatus==='live'?('Live · '+lastUp.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})):liveStatus==='cached'?('Cached · '+lastUp.toLocaleDateString('en-AU',{day:'numeric',month:'short'})):'Offline · tap ✎ to update';
+  var statusCol=liveStatus==='live'?'var(--green)':liveStatus==='loading'?'var(--muted)':liveStatus==='cached'?'var(--blue)':'var(--gold)';
   var hasManual=Object.keys(manualPx).length>0;
 
   var usTotal=US.reduce(function(a,st){return a+effUS(st);},0);
@@ -830,9 +867,10 @@ function TabInvest(p) {
     <div class="page">
       <div class="fb" style="margin-bottom:14px">
         <div class="page-title" style="margin-bottom:0">Investments</div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <div style="width:6px;height:6px;border-radius:50%;background:${statusCol};${liveStatus==='live'?'animation:pulse 2s ease infinite':''}"></div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:${statusCol};${liveStatus==='live'?'animation:pulse 2s ease infinite':''}"></div>
           <span style="font-size:10px;color:${statusCol};font-weight:600">${statusLabel}</span>
+          <button class="ref-btn" onClick=${fetchLive}>↻</button>
         </div>
       </div>
 
@@ -1236,6 +1274,14 @@ function App() {
   var ts=useState('overview');var tab=ts[0],setTab=ts[1];
   var ips=useState(null);var ip=ips[0],setIp=ips[1];
   var pvs=useState(false);var priv=pvs[0],setPriv=pvs[1];
+
+  var nowD=new Date();
+  var isEOFY=(nowD.getMonth()===5&&nowD.getFullYear()===2026);
+  var eofyDays=isEOFY?Math.max(0,Math.round((new Date(2026,5,30)-nowD)/864e5)):0;
+  var eofyMs=useState(function(){return isEOFY&&!localStorage.getItem('eofyDism2026');});
+  var eofyModal=eofyMs[0],setEofyModal=eofyMs[1];
+  function dismissEOFY(){localStorage.setItem('eofyDism2026','1');setEofyModal(false);}
+
   useEffect(function(){
     function h(e){e.preventDefault();setIp(e);}
     window.addEventListener('beforeinstallprompt',h);
@@ -1244,7 +1290,7 @@ function App() {
   var c=useMemo(function(){return calc(s);},[s]);
   function onI(){if(!ip)return;ip.prompt();ip.userChoice.then(function(){setIp(null);});}
   function renderTab(){
-    if(tab==='overview')   return html`<${TabOverview}    s=${s} c=${c} ip=${ip} onI=${onI} />`;
+    if(tab==='overview')   return html`<${TabOverview}    s=${s} c=${c} ip=${ip} onI=${onI} onEOFY=${function(){setEofyModal(true);}} />`;
     if(tab==='portfolio')  return html`<${TabPortfolio}   s=${s} c=${c} />`;
     if(tab==='properties') return html`<${TabProperties}  s=${s} setS=${setS} />`;
     if(tab==='invest')     return html`<${TabInvest}      s=${s} c=${c} setS=${setS} />`;
@@ -1265,6 +1311,37 @@ function App() {
           })}
         </nav>
       </div>
+
+      ${eofyModal&&html`
+        <div class="modal-bg" onClick=${function(e){if(e.target===e.currentTarget)dismissEOFY();}}>
+          <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div>
+                <div style="font-size:18px;font-weight:800;color:var(--red)">⚠ EOFY Action List</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px">${eofyDays} day${eofyDays!==1?'s':''} until 30 June 2026</div>
+              </div>
+              <span class="tag tag-red">${eofyDays}d left</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+              <div style="background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.25);border-radius:12px;padding:12px">
+                <div style="font-size:13px;font-weight:800;color:var(--red);margin-bottom:4px">🔴 Urgent — Due 30 June</div>
+                <div style="font-size:13px;font-weight:700">Insurance $2,576.72</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:2px">BPAY to Hollard<br/>PLC000397030 — $1,137.79<br/>PLC000396819 — $1,438.93</div>
+              </div>
+
+              <div style="background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:12px;padding:12px">
+                <div style="font-size:13px;font-weight:800;color:var(--gold);margin-bottom:6px">🟡 Before 30 June</div>
+                <div style="font-size:12px;margin-bottom:4px"><b>$3,500 outstanding — Hall & Partners</b><br/><span style="font-size:11px;color:var(--muted)">Confirm payment/invoice before EOFY</span></div>
+                <div style="font-size:12px;margin-bottom:4px"><b>2/66 Power Rd gas repair invoice</b><br/><span style="font-size:11px;color:var(--muted)">Immediate deduction if repair complete this FY</span></div>
+                <div style="font-size:12px"><b>Split system depreciation — $3,833 @ 20% DV</b><br/><span style="font-size:11px;color:var(--muted)">Add to tax return as declining-value deduction</span></div>
+              </div>
+            </div>
+
+            <button style="width:100%;padding:14px;background:var(--gold);color:var(--bg);border:none;border-radius:12px;font-family:var(--sans);font-size:15px;font-weight:800;cursor:pointer" onClick=${dismissEOFY}>Got it — dismiss for this EOFY</button>
+          </div>
+        </div>`}
     </div>`;
 }
 
