@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FinDash">
+  <meta name="description" content="Personal finance PWA — property portfolio, investments, super projections, loan calculator and retirement countdown.">
   <title>Trent's Finance Dashboard</title>
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -224,7 +225,8 @@ function calc(s) {
   var ipV= s.props.reduce(function(a,p){return a+p.val;},0);
   var pV = ipV+s.pprVal;
   var pE = pV-s.totalLoan;
-  var usA= s.usUSD/s.audusd;
+  var au = s.audusd>0?s.audusd:1;
+  var usA= s.usUSD/au;
   var inv= usA+s.asxP+s.asxT+s.crypto;
   var nw = pE+s.superBal+inv;
   var yR = Math.max(0,s.retAge-s.age);
@@ -236,7 +238,8 @@ function calc(s) {
   var dfD= Math.max(0,Math.round((dd-now)/864e5));
   var r  = s.superGrow/100;
   var sp = Array.from({length:21},function(_,i){
-    return i===0?Math.round(s.superBal):Math.round(s.superBal*Math.pow(1+r,i)+s.superContrib*((Math.pow(1+r,i)-1)/r));
+    var cf = r>0?((Math.pow(1+r,i)-1)/r):i;
+    return i===0?Math.round(s.superBal):Math.round(s.superBal*Math.pow(1+r,i)+s.superContrib*cf);
   });
   var sa = sp[Math.min(yS,20)];
   var pp = Array.from({length:16},function(_,i){
@@ -391,7 +394,7 @@ function TabOverview(p) {
       </div>
 
       <div class="g3">
-        ${[['🏘️','4 IPs','Properties'],['💰','$'+totalRent+'/wk','Gross Rent/wk'],['🔐',fm(c.sa),'Super @'+s.superAge]].map(function(r){
+        ${[['🏘️',s.props.length+' IPs','Properties'],['💰','$'+totalRent+'/wk','Gross Rent/wk'],['🔐',fm(c.sa),'Super @'+s.superAge]].map(function(r){
           return html`<div class="card-sm" style="text-align:center;padding:12px 6px">
             <div style="font-size:20px">${r[0]}</div>
             <div style="font-family:var(--mono);font-size:12px;color:var(--gold);margin-top:4px;font-weight:700">${r[1]}</div>
@@ -430,7 +433,11 @@ function TabOverview(p) {
 function TabPortfolio(p) {
   var s=p.s;
   var met=useState('value');var setMet=met[1];met=met[0];
-  var allYrs=useMemo(function(){var m=Math.min.apply(null,s.props.map(function(x){return x.yr;}));return Array.from({length:2026-m+1},function(_,i){return m+i;});},[]); 
+  var allYrs=useMemo(function(){
+    var m=Math.min.apply(null,s.props.map(function(x){return x.yr;}));
+    var M=Math.max.apply(null,s.props.map(function(x){var last=x.snaps[x.snaps.length-1];return last?last.year:x.yr;}).concat([new Date().getFullYear()]));
+    return Array.from({length:M-m+1},function(_,i){return m+i;});
+  },[s.props]);
   var yf = met==='value'||met==='equity'
     ?function(v){return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+(v/1e3).toFixed(0)+'k';}
     :function(v){return(v||0).toFixed(2)+'%';};
@@ -440,7 +447,7 @@ function TabPortfolio(p) {
         data:allYrs.map(function(yr){var sn=prop.snaps.find(function(x){return x.year===yr;});if(!sn)return null;return met==='value'?sn.value:met==='yield'?sn.grossY:met==='equity'?sn.equity:sn.netY;}),
         borderColor:PC[i],backgroundColor:PC[i]+'15',fill:false,tension:.4,pointRadius:2,pointHoverRadius:5,borderWidth:2,spanGaps:true};
     });
-  },[met]);
+  },[met,s.props]);
   var tot=useMemo(function(){
     var tv=s.props.reduce(function(a,x){return a+x.val;},0);
     var te=s.props.reduce(function(a,x){var sn=x.snaps[x.snaps.length-1]||{};return a+(sn.equity||x.val-x.loan);},0);
@@ -510,19 +517,20 @@ function TabPortfolio(p) {
 
 // ─── PROPERTY DRILL-DOWN ─────────────────────────────────────
 function Drilldown(p) {
-  var prop=p.prop,col=p.col,onBack=p.onBack,onSave=p.onSave;
+  var prop=p.prop,col=p.col,onBack=p.onBack,onSave=p.onSave,rate=p.rate>0?p.rate:6.09;
   var ct=useState('value');var setCt=ct[1];ct=ct[0];
   var sf=useState(false);var setSf=sf[1];sf=sf[0];
   var snaps=prop.snaps,lbls=snaps.map(function(s){return String(s.year);});
   var yoy=snaps.map(function(s,i){return i===0?0:+((s.value-snaps[i-1].value)/snaps[i-1].value*100).toFixed(2);});
   var lat=snaps[snaps.length-1]||{};
-  var fm_=useState({year:2026,value:prop.val,wRent:prop.rent,loan:prop.loan,exp:Math.round(prop.rent*52*EXP)});
+  var fm_=useState({year:new Date().getFullYear(),value:prop.val,wRent:prop.rent,loan:prop.loan,exp:Math.round(prop.rent*52*EXP)});
   var setFm=fm_[1];fm_=fm_[0];
   var vf=function(v){return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+(v/1e3).toFixed(0)+'k';};
   var pf=function(v){return(v||0).toFixed(2)+'%';};
   function submit(){
     var yr=+fm_.year,v=+fm_.value,wr=+fm_.wRent,ln=+fm_.loan,ex=+fm_.exp;
-    var aR=wr*52,int=Math.round(ln*0.061);
+    if(!(yr>1900&&yr<2200)||!(v>0)||!(wr>=0)||!(ln>=0)||!(ex>=0)){alert('Please enter a valid year and positive values.');return;}
+    var aR=wr*52,int=Math.round(ln*rate/100);
     onSave(prop.id,{year:yr,value:v,wRent:wr,aRent:aR,loan:ln,exp:ex,intC:int,
       grossY:+(aR/v*100).toFixed(3),netY:+((aR-ex-int)/v*100).toFixed(3),equity:v-ln});
     setSf(false);
@@ -614,11 +622,13 @@ function TabProperties(p) {
       if(x.id!==pid)return x;
       var f=x.snaps.filter(function(z){return z.year!==sn.year;});
       var ss=f.concat([sn]).sort(function(a,b){return a.year-b.year;});
-      return Object.assign({},x,{snaps:ss,val:sn.year===2026?sn.value:x.val,rent:sn.year===2026?sn.wRent:x.rent,loan:sn.year===2026?sn.loan:x.loan});
+      var latest=ss[ss.length-1];
+      var isLatest=sn.year===latest.year;
+      return Object.assign({},x,{snaps:ss,val:isLatest?sn.value:x.val,rent:isLatest?sn.wRent:x.rent,loan:isLatest?sn.loan:x.loan});
     })});
     localStorage.setItem(SKEY,JSON.stringify(next)); setS(next);
   }
-  if(sp) return html`<${Drilldown} prop=${sp} col=${PC[si]} onBack=${function(){setSel(null);}} onSave=${onSave} />`;
+  if(sp) return html`<${Drilldown} prop=${sp} col=${PC[si]} rate=${s.loanRate} onBack=${function(){setSel(null);}} onSave=${onSave} />`;
   return html`
     <div class="page">
       <div class="page-title">Properties</div>
@@ -659,6 +669,7 @@ var CGIDS={BNB:'binancecoin',BTC:'bitcoin',ETH:'ethereum',SOL:'solana',XRP:'ripp
 
 function TabInvest(p) {
   var s=p.s,c=p.c;
+  var au=s.audusd>0?s.audusd:1;
   var _lp=useState({});var livePx=_lp[0],setLivePx=_lp[1];
   var _ls=useState('loading');var liveStatus=_ls[0],setLiveStatus=_ls[1];
   var _lt=useState(null);var lastUp=_lt[0],setLastUp=_lt[1];
@@ -701,9 +712,9 @@ function TabInvest(p) {
   var statusLabel=liveStatus==='loading'?'Fetching live prices…':liveStatus==='live'?('Live · '+lastUp.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})):'Offline · showing last known';
   var statusCol=liveStatus==='live'?'var(--green)':liveStatus==='loading'?'var(--muted)':'var(--gold)';
 
-  var usTotal=US.reduce(function(a,st){var v=liveVal(st.t,st.qty,s.audusd);return a+(v!==null?v:st.u/s.audusd);},0);
-  var asxTotal=ASX.reduce(function(a,st){var v=liveVal(st.t,st.qty,s.audusd);return a+(v!==null?v:st.v);},0);
-  var cryptoTotal=CRYPTO.reduce(function(a,coin){var v=liveVal(coin.t,coin.qty,s.audusd);return a+(v!==null?v:coin.v);},0);
+  var usTotal=US.reduce(function(a,st){var v=liveVal(st.t,st.qty,au);return a+(v!==null?v:st.u/au);},0);
+  var asxTotal=ASX.reduce(function(a,st){var v=liveVal(st.t,st.qty,au);return a+(v!==null?v:st.v);},0);
+  var cryptoTotal=CRYPTO.reduce(function(a,coin){var v=liveVal(coin.t,coin.qty,au);return a+(v!==null?v:coin.v);},0);
 
   return html`
     <div class="page">
@@ -740,7 +751,7 @@ function TabInvest(p) {
       <div class="card">
         ${US.map(function(st){
           var lr=liveRow(st.t);
-          var val=lr?(lr.price*st.qty/s.audusd):(st.u/s.audusd);
+          var val=lr?(lr.price*st.qty/au):(st.u/au);
           var chg=lr?lr.chg:st.g;
           var sub=lr?('US$'+lr.price.toFixed(2)+' · '+st.qty+' shares'):(st.qty+' shares');
           return html`<div class="inv-row">
@@ -780,6 +791,116 @@ function TabInvest(p) {
         })}
         <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border)"><span class="sm-num" style="color:var(--gold)">Total ${ff(cryptoTotal)}</span></div>
       </div>
+    </div>`;
+}
+
+// ─── TAB: LOAN CALCULATOR ────────────────────────────────────
+var LKEY='findash_loan_v1';
+var LDEF={amt:500000,rate:6.09,years:30,freq:'monthly',extra:0};
+var FREQ={weekly:{ppy:52,suf:'/wk',lbl:'Weekly'},fortnightly:{ppy:26,suf:'/fn',lbl:'Fortnightly'},monthly:{ppy:12,suf:'/mo',lbl:'Monthly'}};
+
+// Simulate an amortisation schedule; returns period count, total interest
+// and the balance sampled at each year boundary (for charting).
+function amortize(P,pr,ppy,pay,extra,maxN){
+  var bal=P,tot=0,k=0,yearly=[Math.round(P)];
+  while(bal>0.005&&k<maxN){
+    var i=bal*pr;tot+=i;
+    bal=Math.max(0,bal+i-(pay+extra));
+    k++;
+    if(k%ppy===0)yearly.push(Math.round(bal));
+  }
+  if(k%ppy!==0)yearly.push(Math.round(bal));
+  return {periods:k,interest:tot,yearly:yearly};
+}
+function loanCalc(l){
+  var P=Math.max(0,+l.amt||0),rate=Math.max(0,+l.rate||0),extra=Math.max(0,+l.extra||0);
+  var yrs=Math.min(50,Math.max(1,Math.round(+l.years)||1));
+  var f=FREQ[l.freq]||FREQ.monthly;
+  var n=yrs*f.ppy,pr=rate/100/f.ppy;
+  var pay=P>0?(pr>0?P*pr/(1-Math.pow(1+pr,-n)):P/n):0;
+  var base=amortize(P,pr,f.ppy,pay,0,n);
+  var ex=extra>0&&P>0?amortize(P,pr,f.ppy,pay,extra,n):null;
+  return {P:P,f:f,pay:pay,base:base,ex:ex,extra:extra,
+    totInt:base.interest,totPaid:P+base.interest,
+    exInt:ex?ex.interest:0,intSaved:ex?base.interest-ex.interest:0};
+}
+function addMonths(m){var d=new Date();d.setMonth(d.getMonth()+m);return d;}
+function yrmo(months){var y=Math.floor(months/12),m=months%12;return(y>0?y+'yr ':'')+(m>0||y===0?m+'mo':'');}
+
+function TabLoan(p){
+  var s=p.s;
+  var st=useState(function(){try{var d=JSON.parse(localStorage.getItem(LKEY));return d?Object.assign({},LDEF,d):LDEF;}catch(e){return LDEF;}});
+  var l=st[0],setL=st[1];
+  function up(patch){setL(function(prev){var n=Object.assign({},prev,patch);try{localStorage.setItem(LKEY,JSON.stringify(n));}catch(e){}return n;});}
+  var r=useMemo(function(){return loanCalc(l);},[l]);
+  var baseMonths=Math.round(r.base.periods/r.f.ppy*12);
+  var exMonths=r.ex?Math.round(r.ex.periods/r.f.ppy*12):0;
+  var basePayoff=addMonths(baseMonths);
+  var exPayoff=r.ex?addMonths(exMonths):null;
+  var yrNow=new Date().getFullYear();
+  var lbls=r.base.yearly.map(function(_,i){return "'"+String(yrNow+i).slice(2);});
+  var exYearly=r.ex?r.base.yearly.map(function(_,i){return r.ex.yearly[i]!=null?r.ex.yearly[i]:0;}):null;
+  var vf=function(v){return v>=1e6?'$'+(v/1e6).toFixed(2)+'M':'$'+(v/1e3).toFixed(0)+'k';};
+  var dOpt={month:'short',year:'numeric'};
+  return html`
+    <div class="page">
+      <div class="page-title">Loan Calculator</div>
+
+      <div class="card">
+        <div class="fb" style="margin-bottom:10px">
+          <div style="font-weight:800;font-size:14px">Home Loan Repayments</div>
+          <button class="mbtn" style="background:var(--bg3);color:var(--gold)" onClick=${function(){up({amt:s.totalLoan,rate:s.loanRate});}}>Use my loan</button>
+        </div>
+        <div class="pills">
+          ${Object.keys(FREQ).map(function(k){
+            return html`<button class=${'pill'+(l.freq===k?' on':'')} onClick=${function(){up({freq:k});}}>${FREQ[k].lbl}</button>`;
+          })}
+        </div>
+        ${[['Loan Amount ($)','amt','1000'],['Interest Rate (% p.a.)','rate','0.01'],['Term (years)','years','1'],['Extra Repayment ($'+r.f.suf+')','extra','10']].map(function(row){
+          return html`<div class="si">
+            <div style="font-size:12px">${row[0]}</div>
+            <input class="si-in" type="number" step=${row[2]} min="0" value=${l[row[1]]} onInput=${function(e){var o={};o[row[1]]=e.target.value;up(o);}} />
+          </div>`;
+        })}
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,var(--gold-bg),rgba(52,211,153,.04));border-color:rgba(240,180,41,.3)">
+        <div class="lbl" style="color:var(--gold)">${r.f.lbl.toUpperCase()} REPAYMENT</div>
+        <div class="big-num" style="margin-top:6px">${ff(r.pay)}<span style="font-size:13px;color:var(--muted);font-weight:400">${r.f.suf}</span></div>
+        <div class="div"></div>
+        <div class="g3">
+          ${[['Total Interest',ff(r.totInt),'var(--red)'],['Total Repaid',ff(r.totPaid),'var(--text)'],['Paid Off',basePayoff.toLocaleDateString('en-AU',dOpt),'var(--gold)']].map(function(x){
+            return html`<div class="sb"><div class="lbl" style="font-size:9px">${x[0]}</div><div style="font-family:var(--mono);font-size:12px;color:${x[2]};font-weight:700;margin-top:2px">${x[1]}</div></div>`;
+          })}
+        </div>
+      </div>
+
+      ${r.ex&&html`
+        <div class="card" style="border-color:rgba(52,211,153,.35)">
+          <div class="fb"><div style="font-weight:800;font-size:14px;color:var(--green)">With extra ${ff(r.extra)}${r.f.suf}</div><span class="tag tag-green">Savings</span></div>
+          <div class="g2" style="margin-top:10px">
+            ${[['Interest Saved',ff(r.intSaved),'var(--green)'],['Time Saved',yrmo(baseMonths-exMonths),'var(--gold)'],['New Payoff',exPayoff.toLocaleDateString('en-AU',dOpt),'var(--text)'],['New Total Interest',ff(r.exInt),'var(--muted)']].map(function(x){
+              return html`<div class="sb"><div class="lbl">${x[0]}</div><div style="font-family:var(--mono);font-size:13px;color:${x[2]};font-weight:700;margin-top:2px">${x[1]}</div></div>`;
+            })}
+          </div>
+        </div>`}
+
+      <div class="card">
+        <div class="fb"><div style="font-weight:800">Loan Balance Over Time</div><div class="sm-num" style="color:var(--gold)">${ff(r.P)}</div></div>
+        ${r.ex
+          ?html`<${DualLine} d1=${r.base.yearly} d2=${exYearly} l1="Standard" l2="With extra" labels=${lbls} c1="#f0b429" c2="#34d399" yFmt=${vf} />
+            <div style="display:flex;gap:14px;margin-top:8px">
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><div style="width:14px;height:2px;background:#f0b429;border-radius:1px"></div>Standard</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><div style="width:14px;height:2px;background:#34d399;border-radius:1px"></div>With extra repayments</div>
+            </div>`
+          :html`<${LineChart} data=${r.base.yearly} labels=${lbls} color="#f0b429" yFmt=${vf} />`}
+      </div>
+
+      <div class="card">
+        <div class="lbl" style="margin-bottom:10px">TOTAL COST BREAKDOWN${r.ex?' · WITH EXTRA':''}</div>
+        <${DonutChart} segs=${[{l:'Principal',v:r.P,c:'#f0b429'},{l:'Interest',v:Math.round(r.ex?r.exInt:r.totInt),c:'#f87171'}]} />
+      </div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;padding:6px 0">Estimates only — excludes fees, offset accounts and rate changes</div>
     </div>`;
 }
 
@@ -884,11 +1005,12 @@ var TABS = [
   {id:'portfolio', icon:'◎',label:'Portfolio'},
   {id:'properties',icon:'⬡',label:'Properties'},
   {id:'invest',    icon:'◉',label:'Invest'},
+  {id:'loan',      icon:'⊞',label:'Loan'},
   {id:'forecast',  icon:'◬',label:'Forecast'},
 ];
 
 function App() {
-  var ss=useState(function(){try{var d=JSON.parse(localStorage.getItem(SKEY));return d||DEFAULT;}catch(e){return DEFAULT;}});
+  var ss=useState(function(){try{var d=JSON.parse(localStorage.getItem(SKEY));return d?Object.assign({},DEFAULT,d):DEFAULT;}catch(e){return DEFAULT;}});
   var s=ss[0],setS=ss[1];
   var ts=useState('overview');var tab=ts[0],setTab=ts[1];
   var ips=useState(null);var ip=ips[0],setIp=ips[1];
@@ -904,6 +1026,7 @@ function App() {
     if(tab==='portfolio')  return html`<${TabPortfolio}   s=${s} />`;
     if(tab==='properties') return html`<${TabProperties}  s=${s} setS=${setS} />`;
     if(tab==='invest')     return html`<${TabInvest}      s=${s} c=${c} />`;
+    if(tab==='loan')       return html`<${TabLoan}        s=${s} />`;
     if(tab==='forecast')   return html`<${TabForecast}    s=${s} setS=${setS} />`;
   }
   return html`

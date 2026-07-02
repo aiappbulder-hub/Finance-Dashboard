@@ -100,4 +100,5 @@ The app icon appears on your home screen. It runs full-screen with no browser ch
 | **Portfolio** | Comparison chart (value/yield/equity), yield leaderboard vs 6% benchmark |
 | **Properties** | Per-property drill-down: 4 chart views, year-by-year table, snapshot logging |
 | **Invest** | Super, US stocks, ASX, crypto with real holdings |
+| **Loan** | Home loan repayment calculator — weekly/fortnightly/monthly repayments, total interest, payoff date, extra-repayment savings, amortisation chart |
 | **Forecast** | Net worth / passive income / super projections, freedom roadmap, settings |
