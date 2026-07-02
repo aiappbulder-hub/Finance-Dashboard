@@ -99,6 +99,6 @@ The app icon appears on your home screen. It runs full-screen with no browser ch
 | **Overview** | Net worth, passive income vs target, retirement & debt-free countdowns, rental breakdown |
 | **Portfolio** | Comparison chart (value/yield/equity), yield leaderboard vs 6% benchmark |
 | **Properties** | Per-property drill-down: 4 chart views, year-by-year table, snapshot logging |
-| **Invest** | Super, US stocks, ASX, crypto with real holdings |
-| **Loan** | Home loan repayment calculator — weekly/fortnightly/monthly repayments, total interest, payoff date, extra-repayment savings, amortisation chart |
-| **Forecast** | Net worth / passive income / super projections, freedom roadmap, settings |
+| **Invest** | Super, US stocks, ASX, crypto with live prices and manual overrides |
+| **Plan** | Three sections: Forecast (net worth / passive income / super projections, freedom roadmap, spend-vs-invest simulator), Loan Calc (home loan repayments, extra-repayment savings, amortisation chart) and Settings |
+| **Travel** | Country tracker — visited and wishlist, progress by continent |
