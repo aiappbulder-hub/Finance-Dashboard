@@ -1,0 +1,7 @@
+# Personal data exports must never be committed — this repo is public.
+findash-backup*.json
+*.backup.json
+my-data*.json
+
+node_modules/
+.DS_Store
