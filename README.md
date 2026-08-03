@@ -40,8 +40,9 @@ device the same way yours stays on yours.
 
 ### Where the sample numbers come from
 
-The demo profile is a 40-year-old on median Australian figures, so the app opens on
-something recognisable — and so nobody mistakes the samples for a real person's
+The demo profile is a 40-year-old on median Australian figures — a home, a mortgage,
+super, and **no investment properties**, which is the ordinary case. So the app opens
+on something recognisable, and nobody mistakes the samples for a real person's
 finances.
 
 | Sample figure | Value | Source |
@@ -50,14 +51,36 @@ finances.
 | Super balance | $130,000 | ASFA average balance, ages 35–44 |
 | Employer contributions | $10,860 | 12% super guarantee on that salary |
 | Home value | $800,000 | CoreLogic national median dwelling value |
-| Rents | ~$720/wk | National median weekly rent |
+| Home loan remaining | $320,000 | On a 2015 purchase at $560,000 |
 | Passive income target | $78,566 | ASFA Retirement Standard, "comfortable", couple |
 | Super access age | 60 | Preservation age for anyone born after 1 July 1964 |
 
-The four rentals are all anchored to that national median value and differ only by
-purchase year, so the growth and yield charts have a realistic spread to draw. Growth
-assumptions (5% property, 7% investments, 3.5% rent) are conventional planning
-defaults, not forecasts — change them under **Forecast → Settings**.
+That works out to about $639,000 net worth. Growth assumptions (5% property, 7%
+investments, 3.5% rent) are conventional planning defaults, not forecasts — change
+them under **Forecast → Settings**.
+
+### Adding investment properties
+
+The Properties tab starts empty. Tap **+ Add Property** and enter a name, purchase
+year, purchase price, current value, weekly rent and loan balance. The app estimates
+a year-by-year history from the purchase year to today, so the value, yield and
+equity charts have something to draw immediately — refine it afterwards with annual
+snapshots (**tap the property → + Update**).
+
+Once you have at least one, the Portfolio tab's comparison charts and yield
+leaderboard come to life, and the passive income projections on Overview and Forecast
+start filling in against your target.
+
+To remove one, open it and use **Remove This Property** at the bottom.
+
+Two separate loan fields sit under **Forecast → Settings → Property**:
+
+- **Home Loan Balance** — your mortgage. Reduces net worth.
+- **Investment Loans Total** — debt against the rentals. Reduces net worth *and* is
+  charged as interest against rental income.
+
+Keeping them apart is what stops a person with a mortgage and no rentals from showing
+negative "passive income".
 
 ---
 

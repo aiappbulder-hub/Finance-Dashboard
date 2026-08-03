@@ -32,9 +32,10 @@
     }
     html,body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
     #app{max-width:480px;margin:0 auto;min-height:100dvh}
-    .page{padding:calc(env(safe-area-inset-top)+18px) 16px calc(var(--nav-h)+env(safe-area-inset-bottom)+20px);animation:fadeUp .22s ease}
+    /* calc() needs whitespace around + and - or the whole declaration is dropped */
+    .page{padding:calc(env(safe-area-inset-top) + 18px) 16px calc(var(--nav-h) + env(safe-area-inset-bottom) + 20px);animation:fadeUp .22s ease}
     @keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-    .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:calc(var(--nav-h)+env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(5,7,15,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100}
+    .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(5,7,15,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100}
     .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 4px;transition:color .2s;-webkit-tap-highlight-color:transparent}
     .nav-btn.active{color:var(--gold)}
     .nav-icon{font-size:18px;line-height:1}
@@ -155,7 +156,16 @@ var PC   = ['#f0b429','#34d399','#60a5fa','#a78bfa'];
 
 // ─── Seed historical snapshots from purchase year to 2026 ─────
 function seedSnaps(p) {
-  var n = 2026 - p.yr; if (n <= 0) return [];
+  var n = 2026 - p.yr;
+  // A property bought this year has no history to seed, but still needs one
+  // row so the charts and tables have something to draw.
+  if (n <= 0) {
+    var aR0 = p.rent * 52, ex0 = Math.round(aR0 * EXP), ic0 = Math.round(p.loan * 0.061);
+    return [{ year:p.yr, value:p.cost, wRent:p.rent, aRent:aR0, loan:p.loan, exp:ex0, intC:ic0,
+              grossY: p.cost?+(aR0/p.cost*100).toFixed(3):0,
+              netY:   p.cost?+((aR0-ex0-ic0)/p.cost*100).toFixed(3):0,
+              equity: p.cost-p.loan }];
+  }
   var vgr = Math.pow(p.val / p.cost, 1/n) - 1;
   var initRent = p.rent / Math.pow(1.035, n);
   var initLoan = p.cost * 0.78;
@@ -186,16 +196,13 @@ function seedSnaps(p) {
 //   Super        $130,000 — ASFA average balance, ages 35–44
 //   SG rate      12%      — legislated rate since 1 July 2025
 //   Home value   $800,000 — CoreLogic national median dwelling value
-//   Rents        ~$720/wk — national median weekly rent
+//   Home loan    $320,000 — remaining on a 2015 purchase
 //   Target       $78,566  — ASFA Retirement Standard, 'comfortable', couple
-// Property values are anchored to that national median; the four rentals differ
-// only by purchase year so the growth and yield charts have something to show.
-var PROPS_RAW = [
-  {id:1,name:'Rental 1',        suburb:'Sample Suburb',addr:'',yr:2008,cost:320000,val:680000,rent:600,loan:180000},
-  {id:2,name:'Rental 2',        suburb:'Sample Suburb',addr:'',yr:2013,cost:420000,val:750000,rent:650,loan:240000},
-  {id:3,name:'Rental 3',        suburb:'Sample Suburb',addr:'',yr:2018,cost:520000,val:820000,rent:720,loan:330000},
-  {id:4,name:'Rental 4 (Trust)',suburb:'Sample Suburb',addr:'',yr:2021,cost:600000,val:780000,rent:700,loan:420000,trust:true},
-];
+//
+// The sample person owns a home and no investment properties, which is the
+// ordinary case — most Australians own none. The Properties tab starts empty
+// with an "Add investment property" button.
+var PROPS_RAW = [];
 
 // Sample holdings — modest balances outside super, totalling the figures in
 // DEFAULT below. Replace them in Settings, or import your own data file.
@@ -218,10 +225,10 @@ var DEFAULT = {
   demo:true,
   ownerName:'My Dashboard',
   age:40, retAge:60, superAge:60, salary:90500,
-  dfMonths:24, target:78566,
+  dfMonths:168, target:78566,
   pprName:'Primary Residence', pprAddr:'', pprNote:'',
   pprBoughtYr:2015, pprBoughtCost:560000, pprReno:30000,
-  pprVal:800000, totalLoan:450000, loanRate:6.09,
+  pprVal:800000, pprLoan:320000, totalLoan:0, loanRate:6.09,
   expRatio:22, rentGrow:3.5, propGrow:5.0,
   superBal:130000, superContrib:10860, superGrow:7.0,
   usUSD:8000, audusd:0.698,
@@ -262,7 +269,9 @@ function importData(file,onDone){
     var d;
     try{ d=JSON.parse(r.result); }catch(e){ alert("That file isn't valid JSON."); return; }
     if(!d||typeof d!=='object'||!Array.isArray(d.props)){ alert("That doesn't look like a dashboard backup."); return; }
-    onDone(Object.assign({},DEFAULT,d,{demo:false}));
+    // DEFAULT fills in fields the file predates, but its sample home loan must
+    // not be inherited — a backup with no pprLoan means no home loan, not $320k.
+    onDone(Object.assign({},DEFAULT,{pprLoan:0},d,{demo:false}));
   };
   r.onerror=function(){ alert("Couldn't read that file."); };
   r.readAsText(file);
@@ -280,7 +289,12 @@ function calc(s) {
   var nr = gr*(1-s.expRatio/100) - s.totalLoan*s.loanRate/100;
   var ipV= s.props.reduce(function(a,p){return a+p.val;},0);
   var pV = ipV+s.pprVal;
-  var pE = pV-s.totalLoan;
+  // totalLoan is investment-property debt: it reduces equity and is charged
+  // against rental income. pprLoan is the home mortgage — it reduces equity
+  // but must not be charged against rent, or a person with a home and no
+  // rentals shows negative "passive income".
+  var hl = s.pprLoan||0;
+  var pE = pV-s.totalLoan-hl;
   var usA= s.usUSD/s.audusd;
   var inv= usA+s.asxP+s.asxT+s.crypto;
   var nw = pE+s.superBal+inv;
@@ -300,12 +314,12 @@ function calc(s) {
     return Math.round(gr*Math.pow(1+s.rentGrow/100,i)*(1-s.expRatio/100)-(i<s.dfMonths/12?s.totalLoan*s.loanRate/100:0));
   });
   var nwp= Array.from({length:21},function(_,i){
-    return Math.round(pV*Math.pow(1+s.propGrow/100,i)-Math.max(0,s.totalLoan*Math.pow(.88,i))+sp[Math.min(i,20)]+inv*Math.pow(1+s.invGrow/100,i));
+    return Math.round(pV*Math.pow(1+s.propGrow/100,i)-Math.max(0,s.totalLoan*Math.pow(.88,i))-Math.max(0,hl*Math.pow(.88,i))+sp[Math.min(i,20)]+inv*Math.pow(1+s.invGrow/100,i));
   });
-  return {gr:gr,nr:nr,pV:pV,ipV:ipV,pE:pE,usA:usA,inv:inv,nw:nw,
+  return {gr:gr,nr:nr,pV:pV,ipV:ipV,pE:pE,usA:usA,inv:inv,nw:nw,hl:hl,
     yR:yR,sa:sa,sp:sp,pp:pp,nwp:nwp,
-    gY:gr/ipV*100, pNow:Math.min(100,nr/s.target*100),
-    pPost:Math.min(100,pp[Math.ceil(s.dfMonths/12)]/s.target*100),
+    gY:ipV?gr/ipV*100:0, pNow:Math.min(100,Math.max(0,nr/s.target*100)),
+    pPost:Math.min(100,Math.max(0,pp[Math.min(Math.ceil(s.dfMonths/12),15)]/s.target*100)),
     rd:rd,dd:dd,
     rYr:Math.floor(rtD/365),rMo:Math.floor((rtD%365)/30),rDy:rtD%30,
     dYr:Math.floor(dfD/365),dMo:Math.floor((dfD%365)/30),dDy:dfD%30,
@@ -389,7 +403,8 @@ function DonutChart(p) {
 function TabOverview(p) {
   var s=p.s,c=p.c,ip=p.ip,onI=p.onI;
   var totalRent=s.props.reduce(function(a,x){return a+x.rent;},0);
-  var postDebt=ff(c.pp[Math.ceil(s.dfMonths/12)]);
+  var postDebt=ff(c.pp[Math.min(Math.ceil(s.dfMonths/12),15)]);
+  var hasIP=s.props.length>0;
   return html`
     <div class="page">
       ${s.demo && html`<div class="demo-b">◈ Sample data — swap in your own figures under Forecast → Settings</div>`}
@@ -423,18 +438,24 @@ function TabOverview(p) {
 
       <div class="card">
         <div class="fb"><div class="lbl">PASSIVE INCOME</div><span class="tag tag-gold">Net Rental</span></div>
-        <div class="fb" style="margin-top:8px;align-items:flex-end">
-          <div>
-            <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green)">${ff(c.nr)}<span style="font-size:11px;font-weight:400;color:var(--muted)">/yr</span></div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">Target ${ff(s.target)}</div>
+        ${hasIP?html`
+          <div class="fb" style="margin-top:8px;align-items:flex-end">
+            <div>
+              <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green)">${ff(c.nr)}<span style="font-size:11px;font-weight:400;color:var(--muted)">/yr</span></div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Target ${ff(s.target)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:10px;color:var(--muted)">Post debt-free</div>
+              <div class="sm-num" style="color:var(--gold)">${postDebt}/yr</div>
+            </div>
           </div>
-          <div style="text-align:right">
-            <div style="font-size:10px;color:var(--muted)">Post debt-free</div>
-            <div class="sm-num" style="color:var(--gold)">${postDebt}/yr</div>
-          </div>
-        </div>
-        <div class="prg"><div class="prg-f" style="width:${c.pNow}%"></div></div>
-        <div style="font-size:11px;color:var(--muted)">${Math.round(c.pNow)}% of target now · ${Math.round(c.pPost)}% post debt-free</div>
+          <div class="prg"><div class="prg-f" style="width:${c.pNow}%"></div></div>
+          <div style="font-size:11px;color:var(--muted)">${Math.round(c.pNow)}% of target now · ${Math.round(c.pPost)}% post debt-free</div>`
+        :html`
+          <div style="margin-top:8px">
+            <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--muted)">$0<span style="font-size:11px;font-weight:400">/yr</span></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5">No investment properties yet. Target is ${ff(s.target)}/yr — add one under <b style="color:var(--text)">Properties</b> to project rental income towards it.</div>
+          </div>`}
       </div>
 
       <div class="g2" style="margin-bottom:10px">
@@ -449,7 +470,7 @@ function TabOverview(p) {
       </div>
 
       <div class="g3">
-        ${[['🏘️','4 IPs','Properties'],['💰','$'+totalRent+'/wk','Gross Rent/wk'],['🔐',fm(c.sa),'Super @'+s.superAge]].map(function(r){
+        ${[['🏘️',s.props.length+(s.props.length===1?' IP':' IPs'),'Properties'],['💰','$'+totalRent+'/wk','Gross Rent/wk'],['🔐',fm(c.sa),'Super @'+s.superAge]].map(function(r){
           return html`<div class="card-sm" style="text-align:center;padding:12px 6px">
             <div style="font-size:20px">${r[0]}</div>
             <div style="font-family:var(--mono);font-size:12px;color:var(--gold);margin-top:4px;font-weight:700">${r[1]}</div>
@@ -458,13 +479,13 @@ function TabOverview(p) {
         })}
       </div>
 
-      <div class="sec">Rental Breakdown FY26 (est. 22% expenses)</div>
-      <div class="card">
+      ${hasIP && html`<div class="sec">Rental Breakdown FY26 (est. ${s.expRatio}% expenses)</div>`}
+      ${hasIP && html`<div class="card">
         ${s.props.map(function(p,i){
           var gr=p.rent*52,exp=Math.round(gr*s.expRatio/100),int=Math.round(p.loan*s.loanRate/100),net=gr-exp-int;
           return html`<div class="fb" style="padding:7px 0;border-bottom:1px solid var(--border)">
             <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:3px;height:32px;background:${PC[i]};border-radius:2px;flex-shrink:0"></div>
+              <div style="width:3px;height:32px;background:${PC[i%PC.length]};border-radius:2px;flex-shrink:0"></div>
               <div>
                 <div style="font-size:13px;font-weight:700">${p.name}</div>
                 <div style="font-size:10px;color:var(--muted)">$${p.rent}/wk · exp ${ff(exp)} · int ${ff(int)}</div>
@@ -480,7 +501,7 @@ function TabOverview(p) {
           <div style="font-size:12px;font-weight:700;color:var(--muted)">Total Net Rental</div>
           <div style="font-family:var(--mono);font-size:15px;color:var(--green);font-weight:700">${ff(c.nr)}/yr</div>
         </div>
-      </div>
+      </div>`}
     </div>`;
 }
 
@@ -488,7 +509,11 @@ function TabOverview(p) {
 function TabPortfolio(p) {
   var s=p.s;
   var met=useState('value');var setMet=met[1];met=met[0];
-  var allYrs=useMemo(function(){var m=Math.min.apply(null,s.props.map(function(x){return x.yr;}));return Array.from({length:2026-m+1},function(_,i){return m+i;});},[]); 
+  var allYrs=useMemo(function(){
+    if(!s.props.length)return [];
+    var m=Math.min.apply(null,s.props.map(function(x){return x.yr;}));
+    return Array.from({length:2026-m+1},function(_,i){return m+i;});
+  },[s.props]);
   var yf = met==='value'||met==='equity'
     ?function(v){return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+(v/1e3).toFixed(0)+'k';}
     :function(v){return(v||0).toFixed(2)+'%';};
@@ -496,21 +521,34 @@ function TabPortfolio(p) {
     return s.props.map(function(prop,i){
       return {label:prop.name,
         data:allYrs.map(function(yr){var sn=prop.snaps.find(function(x){return x.year===yr;});if(!sn)return null;return met==='value'?sn.value:met==='yield'?sn.grossY:met==='equity'?sn.equity:sn.netY;}),
-        borderColor:PC[i],backgroundColor:PC[i]+'15',fill:false,tension:.4,pointRadius:2,pointHoverRadius:5,borderWidth:2,spanGaps:true};
+        borderColor:PC[i%PC.length],backgroundColor:PC[i%PC.length]+'15',fill:false,tension:.4,pointRadius:2,pointHoverRadius:5,borderWidth:2,spanGaps:true};
     });
   },[met]);
   var tot=useMemo(function(){
     var tv=s.props.reduce(function(a,x){return a+x.val;},0);
     var te=s.props.reduce(function(a,x){var sn=x.snaps[x.snaps.length-1]||{};return a+(sn.equity||x.val-x.loan);},0);
     var tr=s.props.reduce(function(a,x){return a+x.rent;},0);
-    return{tv:tv,te:te,tr:tr,ay:(tr*52/tv*100)};
+    return{tv:tv,te:te,tr:tr,ay:tv?(tr*52/tv*100):0};
   },[s.props]);
   var ldr=useMemo(function(){
     return s.props.map(function(x,i){
       var sn=x.snaps[x.snaps.length-1]||{};
-      return Object.assign({},x,{col:PC[i],grossY:sn.grossY||0,netY:sn.netY||0,cg:(x.val-x.cost)/x.cost*100,eq:sn.equity||x.val-x.loan});
+      return Object.assign({},x,{col:PC[i%PC.length],grossY:sn.grossY||0,netY:sn.netY||0,cg:x.cost?(x.val-x.cost)/x.cost*100:0,eq:sn.equity||x.val-x.loan});
     }).sort(function(a,b){return b.grossY-a.grossY;});
   },[s.props]);
+
+  if(!s.props.length) return html`
+    <div class="page">
+      <div class="page-title">Portfolio</div>
+      <div class="card" style="text-align:center;padding:34px 20px">
+        <div style="font-size:32px;line-height:1;margin-bottom:10px">◎</div>
+        <div style="font-weight:800;font-size:15px">Nothing to compare yet</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55">
+          This tab charts your investment properties against each other — value, yield and equity over time.
+          Add one on the <b style="color:var(--text)">Properties</b> tab and it appears here.
+        </div>
+      </div>
+    </div>`;
 
   return html`
     <div class="page">
@@ -534,7 +572,7 @@ function TabPortfolio(p) {
         </div>
         <${MultiLine} datasets=${ds} labels=${allYrs} yFmt=${yf} />
         <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px">
-          ${s.props.map(function(x,i){return html`<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:14px;height:2px;border-radius:1px;background:${PC[i]}"></div>${x.name}</div>`;})}
+          ${s.props.map(function(x,i){return html`<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:14px;height:2px;border-radius:1px;background:${PC[i%PC.length]}"></div>${x.name}</div>`;})}
         </div>
       </div>
 
@@ -568,7 +606,7 @@ function TabPortfolio(p) {
 
 // ─── PROPERTY DRILL-DOWN ─────────────────────────────────────
 function Drilldown(p) {
-  var prop=p.prop,col=p.col,onBack=p.onBack,onSave=p.onSave;
+  var prop=p.prop,col=p.col,onBack=p.onBack,onSave=p.onSave,onRemove=p.onRemove;
   var ct=useState('value');var setCt=ct[1];ct=ct[0];
   var sf=useState(false);var setSf=sf[1];sf=sf[0];
   var snaps=prop.snaps,lbls=snaps.map(function(s){return String(s.year);});
@@ -659,14 +697,43 @@ function Drilldown(p) {
           </tbody>
         </table>
       </div>
+
+      ${onRemove && html`<button class="btn-d" style="margin-top:16px" onClick=${onRemove}>🗑  Remove This Property</button>`}
     </div>`;
 }
+
+var NEW_PROP={name:'',suburb:'',addr:'',yr:String(new Date().getFullYear()),cost:'',val:'',rent:'',loan:'',trust:false};
 
 function TabProperties(p) {
   var s=p.s,setS=p.setS;
   var sel=useState(null);var setSel=sel[1];sel=sel[0];
+  var _af=useState(false);var addOpen=_af[0],setAddOpen=_af[1];
+  var _nf=useState(NEW_PROP);var nf=_nf[0],setNf=_nf[1];
   var sp=sel?s.props.find(function(x){return x.id===sel;}):null;
   var si=sel?s.props.findIndex(function(x){return x.id===sel;}):-1;
+
+  function persist(next){ localStorage.setItem(SKEY,JSON.stringify(next)); setS(next); }
+
+  function addProp(){
+    var yr=parseInt(nf.yr,10), cost=parseFloat(nf.cost), val=parseFloat(nf.val),
+        rent=parseFloat(nf.rent), loan=parseFloat(nf.loan)||0;
+    if(!nf.name.trim())            { alert('Give the property a name.'); return; }
+    if(!yr||yr<1900||yr>2100)      { alert('Enter a valid purchase year.'); return; }
+    if(!(cost>0))                  { alert('Enter the purchase price.'); return; }
+    if(!(val>0))                   { alert('Enter the current value.'); return; }
+    if(!(rent>=0)||isNaN(rent))    { alert('Enter the weekly rent (0 if vacant).'); return; }
+    var raw={ id:Date.now(), name:nf.name.trim(), suburb:nf.suburb.trim(), addr:nf.addr.trim(),
+              yr:yr, cost:cost, val:val, rent:rent, loan:loan, trust:!!nf.trust };
+    var next=Object.assign({},s,{demo:false,props:s.props.concat([Object.assign({},raw,{snaps:seedSnaps(raw)})])});
+    persist(next); setNf(NEW_PROP); setAddOpen(false);
+  }
+
+  function removeProp(pid){
+    var victim=s.props.find(function(x){return x.id===pid;});
+    if(!confirm('Remove "'+(victim?victim.name:'this property')+'" and its history? This cannot be undone.')) return;
+    persist(Object.assign({},s,{props:s.props.filter(function(x){return x.id!==pid;})}));
+    setSel(null);
+  }
   function onSave(pid,sn){
     var next=Object.assign({},s,{props:s.props.map(function(x){
       if(x.id!==pid)return x;
@@ -676,19 +743,68 @@ function TabProperties(p) {
     })});
     localStorage.setItem(SKEY,JSON.stringify(next)); setS(next);
   }
-  if(sp) return html`<${Drilldown} prop=${sp} col=${PC[si]} onBack=${function(){setSel(null);}} onSave=${onSave} />`;
+  if(sp) return html`<${Drilldown} prop=${sp} col=${PC[si%PC.length]} onBack=${function(){setSel(null);}} onSave=${onSave} onRemove=${function(){removeProp(sp.id);}} />`;
+
+  function NF(r){
+    return html`<div class="snap-row">
+      <div style="font-size:12px">${r[0]}</div>
+      <input class="snap-in" type=${r[2]||'number'} step=${r[3]||'1'} placeholder=${r[4]||''} value=${nf[r[1]]}
+        onInput=${function(e){var k=r[1],v=e.target.value;setNf(function(f){var n=Object.assign({},f);n[k]=v;return n;});}} />
+    </div>`;
+  }
+
   return html`
     <div class="page">
-      <div class="page-title">Properties</div>
-      <div class="sec">Investment Properties · Tap to drill down</div>
+      <div class="fb" style="margin-bottom:4px">
+        <div class="page-title" style="margin-bottom:0">Properties</div>
+        <button onClick=${function(){setAddOpen(!addOpen);}}
+          style="background:${addOpen?'var(--bg3)':'var(--gold)'};color:${addOpen?'var(--muted)':'var(--bg)'};border:none;border-radius:8px;padding:7px 12px;font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer">
+          ${addOpen?'✕ Cancel':'+ Add Property'}
+        </button>
+      </div>
+
+      ${addOpen && html`
+        <div class="snap" style="margin-top:10px">
+          <div style="font-weight:800;font-size:13px;color:var(--gold);margin-bottom:10px">Add Investment Property</div>
+          ${[['Name','name','text','1','e.g. Rental 1'],
+             ['Suburb','suburb','text','1','optional'],
+             ['Address','addr','text','1','optional — stays on this device'],
+             ['Purchase Year','yr','number','1',''],
+             ['Purchase Price','cost','number','1000',''],
+             ['Current Value','val','number','1000',''],
+             ['Weekly Rent','rent','number','5',''],
+             ['Loan Balance','loan','number','1000','0 if paid off']].map(NF)}
+          <div class="snap-row">
+            <div style="font-size:12px">Held in a trust</div>
+            <input type="checkbox" checked=${nf.trust} style="width:18px;height:18px;accent-color:var(--gold)"
+              onChange=${function(e){var v=e.target.checked;setNf(function(f){return Object.assign({},f,{trust:v});});}} />
+          </div>
+          <button class="snap-btn" onClick=${addProp}>✓ Add Property</button>
+          <div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center">
+            History is estimated from the purchase year to today. Refine it with annual snapshots afterwards.
+          </div>
+        </div>`}
+
+      ${s.props.length
+        ? html`<div class="sec">Investment Properties · Tap to drill down</div>`
+        : (!addOpen && html`
+          <div class="card" style="text-align:center;padding:34px 20px;margin-top:10px">
+            <div style="font-size:32px;line-height:1;margin-bottom:10px">⬡</div>
+            <div style="font-weight:800;font-size:15px">No investment properties</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55">
+              Tap <b style="color:var(--text)">+ Add Property</b> to track one. You'll get value and yield charts,
+              equity build-up and a year-by-year history — and your passive income projections start filling in.
+            </div>
+          </div>`)}
+
       ${s.props.map(function(x,i){
         var gy=(x.rent*52/x.val*100).toFixed(2),gain=x.val-x.cost;
         return html`<div class="plc" onClick=${function(){setSel(x.id);}}>
-          <div class="pacc" style="background:${PC[i]}"></div>
+          <div class="pacc" style="background:${PC[i%PC.length]}"></div>
           <div style="flex:1;min-width:0">
             <div class="fb">
               <div style="font-weight:800;font-size:14px">${x.name}${x.trust?html` <span class="tag tag-purple" style="font-size:8px">Trust</span>`:''}</div>
-              <div style="font-family:var(--mono);font-size:14px;color:${PC[i]};font-weight:700">${gy}%</div>
+              <div style="font-family:var(--mono);font-size:14px;color:${PC[i%PC.length]};font-weight:700">${gy}%</div>
             </div>
             <div style="font-size:11px;color:var(--muted);margin-top:1px">${x.addr} · $${x.rent}/wk</div>
             <div class="fb" style="margin-top:6px">
@@ -705,8 +821,9 @@ function TabProperties(p) {
         <div class="g2" style="margin-top:10px">
           ${[['Est. Value',ff(s.pprVal),'var(--gold)'],
              ['Bought '+s.pprBoughtYr,ff(s.pprBoughtCost),'var(--muted)'],
-             ['Renovations',ff(s.pprReno),'var(--muted)'],
-             ['Capital Gain',ff(s.pprVal-(s.pprBoughtCost||0)-(s.pprReno||0)),'var(--green)']].map(function(r){
+             [s.pprLoan?'Loan Balance':'Renovations',s.pprLoan?ff(s.pprLoan):ff(s.pprReno),s.pprLoan?'var(--red)':'var(--muted)'],
+             [s.pprLoan?'Equity':'Capital Gain',
+              s.pprLoan?ff(s.pprVal-s.pprLoan):ff(s.pprVal-(s.pprBoughtCost||0)-(s.pprReno||0)),'var(--green)']].map(function(r){
             return html`<div class="sb"><div class="lbl">${r[0]}</div><div class="sm-num" style="color:${r[2]};margin-top:2px">${r[1]}</div></div>`;
           })}
         </div>
@@ -935,7 +1052,8 @@ function TabForecast(p) {
         <${F} label="PPR Purchase Year" k="pprBoughtYr" />
         <${F} label="PPR Purchase Price" k="pprBoughtCost" />
         <${F} label="PPR Renovations Spend" k="pprReno" />
-        <${F} label="Total Loan Balance" k="totalLoan" />
+        <${F} label="Home Loan Balance" k="pprLoan" />
+        <${F} label="Investment Loans Total" k="totalLoan" />
         <${F} label="Loan Rate (%)" k="loanRate" step="0.01" />
         <${F} label="Expense Ratio (% gross rent)" k="expRatio" step="0.5" />
         <${F} label="Annual Rent Growth (%)" k="rentGrow" step="0.1" />
@@ -1070,8 +1188,10 @@ function App() {
   var ss=useState(function(){
     try{
       var d=JSON.parse(localStorage.getItem(SKEY));
-      // Merge over DEFAULT so saved data from older versions picks up new fields
-      return d?Object.assign({},DEFAULT,d):DEFAULT;
+      // Merge over DEFAULT so saved data from older versions picks up new fields.
+      // Sample-only figures are zeroed first so an existing install never
+      // inherits them — an older save with no pprLoan has no home loan.
+      return d?Object.assign({},DEFAULT,{pprLoan:0,demo:false},d):DEFAULT;
     }catch(e){ return DEFAULT; }
   });
   var s=ss[0],setS=ss[1];
