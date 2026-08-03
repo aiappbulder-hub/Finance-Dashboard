@@ -177,44 +177,55 @@ function seedSnaps(p) {
 }
 
 // ─── DEMO DATA ────────────────────────────────────────────────
-// Everything below is sample data that ships with the public app.
-// Nobody's real figures live in this file — personal data is entered
-// on-device and stored only in that device's localStorage.
+// Sample data that ships with the public app. Nobody's real figures live in
+// this file — personal data is entered on-device and kept in localStorage.
+//
+// The sample profile is a 40-year-old on median Australian numbers, so the
+// dashboard opens on something recognisable rather than invented figures:
+//   Salary       $90,500  — ABS median full-time weekly earnings $1,741 (May 2025)
+//   Super        $130,000 — ASFA average balance, ages 35–44
+//   SG rate      12%      — legislated rate since 1 July 2025
+//   Home value   $800,000 — CoreLogic national median dwelling value
+//   Rents        ~$720/wk — national median weekly rent
+//   Target       $78,566  — ASFA Retirement Standard, 'comfortable', couple
+// Property values are anchored to that national median; the four rentals differ
+// only by purchase year so the growth and yield charts have something to show.
 var PROPS_RAW = [
-  {id:1,name:'Rental 1',        suburb:'Sample Suburb',  addr:'',yr:2005,cost:150000,val:460000,rent:390,loan:60000},
-  {id:2,name:'Rental 2',        suburb:'Sample Suburb',  addr:'',yr:2012,cost:220000,val:470000,rent:430,loan:80000},
-  {id:3,name:'Rental 3',        suburb:'Sample Suburb',  addr:'',yr:2018,cost:340000,val:500000,rent:500,loan:120000},
-  {id:4,name:'Rental 4 (Trust)',suburb:'Sample Suburb',  addr:'',yr:2015,cost:200000,val:340000,rent:400,loan:90000,trust:true},
+  {id:1,name:'Rental 1',        suburb:'Sample Suburb',addr:'',yr:2008,cost:320000,val:680000,rent:600,loan:180000},
+  {id:2,name:'Rental 2',        suburb:'Sample Suburb',addr:'',yr:2013,cost:420000,val:750000,rent:650,loan:240000},
+  {id:3,name:'Rental 3',        suburb:'Sample Suburb',addr:'',yr:2018,cost:520000,val:820000,rent:720,loan:330000},
+  {id:4,name:'Rental 4 (Trust)',suburb:'Sample Suburb',addr:'',yr:2021,cost:600000,val:780000,rent:700,loan:420000,trust:true},
 ];
 
-// Sample holdings — replace with your own in Settings, or import your data file
+// Sample holdings — modest balances outside super, totalling the figures in
+// DEFAULT below. Replace them in Settings, or import your own data file.
 var DEMO_CRYPTO = [
-  {t:'BTC', n:'Bitcoin',   v:6000, g:0, qty:0.05},
-  {t:'ETH', n:'Ethereum',  v:4000, g:0, qty:1.2},
-  {t:'SOL', n:'Solana',    v:1000, g:0, qty:8},
+  {t:'BTC', n:'Bitcoin',   v:1800,g:0,qty:0.012},
+  {t:'ETH', n:'Ethereum',  v:900, g:0,qty:0.25},
+  {t:'SOL', n:'Solana',    v:300, g:0,qty:2},
 ];
 var DEMO_US = [
-  {t:'AAPL',n:'Apple',    u:5000,g:0,qty:12},
-  {t:'GOOG',n:'Alphabet', u:4000,g:0,qty:8},
-  {t:'AMZN',n:'Amazon',   u:3000,g:0,qty:6},
+  {t:'AAPL',n:'Apple',    u:3500,g:0,qty:14},
+  {t:'GOOG',n:'Alphabet', u:2800,g:0,qty:12},
+  {t:'AMZN',n:'Amazon',   u:1700,g:0,qty:8},
 ];
 var DEMO_ASX = [
-  {t:'NDQ.AX',n:'Betashares NASDAQ',v:5000,g:0,trust:false,qty:80,px:59.43},
-  {t:'VAS.AX',n:'Vanguard Aus Shares',v:4000,g:0,trust:false,qty:40,px:98.50},
+  {t:'NDQ.AX',n:'Betashares NASDAQ',  v:9000,g:0,trust:false,qty:150,px:60.00},
+  {t:'VAS.AX',n:'Vanguard Aus Shares',v:6000,g:0,trust:false,qty:60, px:100.00},
 ];
 
 var DEFAULT = {
   demo:true,
   ownerName:'My Dashboard',
-  age:40, retAge:60, superAge:60, salary:90000,
-  dfMonths:24, target:80000,
+  age:40, retAge:60, superAge:60, salary:90500,
+  dfMonths:24, target:78566,
   pprName:'Primary Residence', pprAddr:'', pprNote:'',
-  pprBoughtYr:2005, pprBoughtCost:250000, pprReno:0,
-  pprVal:550000, totalLoan:350000, loanRate:6.09,
+  pprBoughtYr:2015, pprBoughtCost:560000, pprReno:30000,
+  pprVal:800000, totalLoan:450000, loanRate:6.09,
   expRatio:22, rentGrow:3.5, propGrow:5.0,
-  superBal:250000, superContrib:10350, superGrow:7.0,
-  usUSD:12000, audusd:0.634,
-  asxP:9000, asxT:0, crypto:11000, invGrow:7.0,
+  superBal:130000, superContrib:10860, superGrow:7.0,
+  usUSD:8000, audusd:0.698,
+  asxP:15000, asxT:0, crypto:3000, invGrow:7.0,
   holdUS:DEMO_US, holdASX:DEMO_ASX, holdCrypto:DEMO_CRYPTO,
   props: PROPS_RAW.map(function(p){return Object.assign({},p,{snaps:seedSnaps(p)});})
 };
@@ -779,7 +790,7 @@ function TabInvest(p) {
       <div class="sec">Superannuation</div>
       <div class="card" style="background:rgba(96,165,250,.04);border-color:rgba(96,165,250,.25)">
         <div class="fb">
-          <div><div style="font-weight:800;font-size:15px;color:var(--blue)">Super Fund</div><div style="font-size:11px;color:var(--muted);margin-top:2px">SGC 11.5% · $${s.salary.toLocaleString()} salary</div></div>
+          <div><div style="font-weight:800;font-size:15px;color:var(--blue)">Super Fund</div><div style="font-size:11px;color:var(--muted);margin-top:2px">SG ${s.salary?(s.superContrib/s.salary*100).toFixed(1):'12.0'}% · $${s.salary.toLocaleString()} salary</div></div>
           <div style="text-align:right"><div class="sm-num" style="color:var(--blue)">${ff(s.superBal)}</div><div style="font-size:10px;color:var(--muted)">+${ff(s.superContrib)}/yr</div></div>
         </div>
         <div class="div"></div>

@@ -38,6 +38,27 @@ screen explaining what it is. Nothing of yours is in it. They can overwrite ever
 figure with their own under **Forecast → Settings**, and their data stays on their
 device the same way yours stays on yours.
 
+### Where the sample numbers come from
+
+The demo profile is a 40-year-old on median Australian figures, so the app opens on
+something recognisable — and so nobody mistakes the samples for a real person's
+finances.
+
+| Sample figure | Value | Source |
+|---|---|---|
+| Salary | $90,500 | ABS median full-time weekly earnings, $1,741 (May 2025) |
+| Super balance | $130,000 | ASFA average balance, ages 35–44 |
+| Employer contributions | $10,860 | 12% super guarantee on that salary |
+| Home value | $800,000 | CoreLogic national median dwelling value |
+| Rents | ~$720/wk | National median weekly rent |
+| Passive income target | $78,566 | ASFA Retirement Standard, "comfortable", couple |
+| Super access age | 60 | Preservation age for anyone born after 1 July 1964 |
+
+The four rentals are all anchored to that national median value and differ only by
+purchase year, so the growth and yield charts have a realistic spread to draw. Growth
+assumptions (5% property, 7% investments, 3.5% rent) are conventional planning
+defaults, not forecasts — change them under **Forecast → Settings**.
+
 ---
 
 ## Getting your own data in
