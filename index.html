@@ -151,6 +151,7 @@ var Fragment  = React.Fragment;
 
 // ─── Constants ────────────────────────────────────────────────
 var SKEY = 'findash_v5';
+var WKEY = 'findash_seen';   // welcome screen dismissed — separate from saved data
 var EXP  = 0.22;           // 22% expense ratio: mgmt ~8% + rates + insurance + maintenance
 var PC   = ['#f0b429','#34d399','#60a5fa','#a78bfa'];
 
@@ -712,7 +713,9 @@ function TabProperties(p) {
   var sp=sel?s.props.find(function(x){return x.id===sel;}):null;
   var si=sel?s.props.findIndex(function(x){return x.id===sel;}):-1;
 
-  function persist(next){ localStorage.setItem(SKEY,JSON.stringify(next)); setS(next); }
+  // Anything the user saves is their own data, never a sample — stamp demo:false
+  // or the loader would discard it as a stale sample snapshot.
+  function persist(next){ var n=Object.assign({},next,{demo:false}); localStorage.setItem(SKEY,JSON.stringify(n)); setS(n); }
 
   function addProp(){
     var yr=parseInt(nf.yr,10), cost=parseFloat(nf.cost), val=parseFloat(nf.val),
@@ -741,7 +744,7 @@ function TabProperties(p) {
       var ss=f.concat([sn]).sort(function(a,b){return a.year-b.year;});
       return Object.assign({},x,{snaps:ss,val:sn.year===2026?sn.value:x.val,rent:sn.year===2026?sn.wRent:x.rent,loan:sn.year===2026?sn.loan:x.loan});
     })});
-    localStorage.setItem(SKEY,JSON.stringify(next)); setS(next);
+    persist(next);
   }
   if(sp) return html`<${Drilldown} prop=${sp} col=${PC[si%PC.length]} onBack=${function(){setSel(null);}} onSave=${onSave} onRemove=${function(){removeProp(sp.id);}} />`;
 
@@ -974,7 +977,7 @@ function TabForecast(p) {
   var yr=new Date().getFullYear();
   var l20=Array.from({length:21},function(_,i){return"'"+String(yr+i).slice(2);});
   var l15=Array.from({length:16},function(_,i){return"'"+String(yr+i).slice(2);});
-  function save(n){localStorage.setItem(SKEY,JSON.stringify(n));setS(n);}
+  function save(n){var v=Object.assign({},n,{demo:false});localStorage.setItem(SKEY,JSON.stringify(v));setS(v);}
   function sv(k,v){save(Object.assign({},s,{[k]:parseFloat(v)||0,demo:false}));}
   function svt(k,v){save(Object.assign({},s,{[k]:v,demo:false}));}
   function F(fp){return html`<div class="si"><div style="font-size:12px">${fp.label}</div><input class="si-in" type="number" step=${fp.step||'1'} value=${s[fp.k]} onInput=${function(e){sv(fp.k,e.target.value);}} /></div>`;}
@@ -1176,7 +1179,7 @@ function Lock(p) {
         <button style="background:none;border:none;color:var(--muted);font-size:11px;font-family:var(--sans);margin-top:18px;cursor:pointer;text-decoration:underline"
           onClick=${function(){
             if(confirm('Forgotten PIN?\n\nThe only way back in is to clear this device\'s data and start fresh. You can restore from a backup file afterwards.')){
-              try{localStorage.removeItem(SKEY);localStorage.removeItem(PKEY);}catch(e){}
+              try{localStorage.removeItem(SKEY);localStorage.removeItem(PKEY);localStorage.removeItem(WKEY);}catch(e){}
               location.reload();
             }
           }}>Forgotten your PIN?</button>
@@ -1188,15 +1191,29 @@ function App() {
   var ss=useState(function(){
     try{
       var d=JSON.parse(localStorage.getItem(SKEY));
+      // A stored copy still flagged demo:true is a stale snapshot of an older
+      // release's sample data. Discard it and use the current DEFAULT, so the
+      // samples always track the shipped version instead of freezing on
+      // whatever shipped the day someone first opened the app.
+      if(!d||d.demo===true){
+        if(d) try{localStorage.removeItem(SKEY);}catch(e){}   // clear the stale snapshot
+        return DEFAULT;
+      }
       // Merge over DEFAULT so saved data from older versions picks up new fields.
       // Sample-only figures are zeroed first so an existing install never
       // inherits them — an older save with no pprLoan has no home loan.
-      return d?Object.assign({},DEFAULT,{pprLoan:0,demo:false},d):DEFAULT;
+      return Object.assign({},DEFAULT,{pprLoan:0,demo:false},d);
     }catch(e){ return DEFAULT; }
   });
   var s=ss[0],setS=ss[1];
   var _lk=useState(function(){return !!getPin();});var locked=_lk[0],setLocked=_lk[1];
-  var _wc=useState(function(){try{return !localStorage.getItem(SKEY);}catch(e){return false;}});
+  var _wc=useState(function(){
+    try{
+      if(localStorage.getItem(WKEY)) return false;
+      var d=JSON.parse(localStorage.getItem(SKEY));
+      return !d||d.demo===true;   // stale sample counts as "not set up yet"
+    }catch(e){ return false; }
+  });
   var welcome=_wc[0],setWelcome=_wc[1];
   var ts=useState('overview');var tab=ts[0],setTab=ts[1];
   var ips=useState(null);var ip=ips[0],setIp=ips[1];
@@ -1216,8 +1233,17 @@ function App() {
   }
   if(locked) return html`<${Lock} onOk=${function(){setLocked(false);}} />`;
   if(welcome) return html`<${Welcome}
-    onDemo=${function(){ localStorage.setItem(SKEY,JSON.stringify(s)); setWelcome(false); }}
-    onImport=${function(next){ localStorage.setItem(SKEY,JSON.stringify(next)); setS(next); setWelcome(false); }} />`;
+    onDemo=${function(){
+      // Only record that the welcome screen was dismissed. Writing the sample
+      // data into storage would freeze it, and later releases could never
+      // update the figures a visitor sees.
+      try{localStorage.setItem(WKEY,'1');}catch(e){}
+      setWelcome(false);
+    }}
+    onImport=${function(next){
+      try{localStorage.setItem(SKEY,JSON.stringify(next));localStorage.setItem(WKEY,'1');}catch(e){}
+      setS(next); setWelcome(false);
+    }} />`;
   return html`
     <div>
       <div key=${tab}>${renderTab()}</div>
