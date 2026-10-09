@@ -1,4 +1,4 @@
-const CACHE = 'findash-v10';
+const CACHE = 'findash-v11';
 const STATIC = ['./manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {

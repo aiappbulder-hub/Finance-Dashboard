@@ -12,107 +12,131 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
   <!-- No ES modules. Four reliable UMD builds via script tags. -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/htm@3.1.1/dist/htm.js"></script>
 
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --bg:#060810;--bg2:#101522;--bg3:#141926;
-      --border:#1c2540;--border2:#253060;
-      --gold:#f0b429;--gold2:#ffd166;--gold-bg:rgba(240,180,41,.09);
-      --green:#34d399;--green-bg:rgba(52,211,153,.09);
-      --red:#f87171;--red-bg:rgba(248,113,113,.09);
+      --bg:#05070d;--bg2:#0e1421;--bg3:#161d2e;
+      --border:#1d2742;--border2:#2a3660;
+      --gold:#f0b429;--gold2:#ffd166;--gold-bg:rgba(240,180,41,.1);
+      --green:#34d399;--green-bg:rgba(52,211,153,.1);
+      --red:#f87171;--red-bg:rgba(248,113,113,.1);
       --blue:#60a5fa;--purple:#a78bfa;
-      --text:#dde4f0;--muted:#5a6a88;--dim:#1c2540;
-      --mono:'Space Mono',monospace;--sans:'Outfit',sans-serif;
-      --nav-h:65px;
+      --text:#e6ecf7;--muted:#7a8bab;--dim:#1d2742;
+      --mono:'Space Mono',monospace;--sans:'Outfit',system-ui,sans-serif;
+      --nav-h:68px;
+      --shadow:0 12px 30px -16px rgba(0,0,0,.7);
     }
+    html{-webkit-text-size-adjust:100%}
     html,body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-    #app{max-width:480px;margin:0 auto;min-height:100dvh}
+    body{background:radial-gradient(120% 360px at 50% -90px,#111b31 0%,var(--bg) 70%) no-repeat,var(--bg)}
+    #app{max-width:520px;margin:0 auto;min-height:100dvh}
     /* calc() needs whitespace around + and - or the whole declaration is dropped */
-    .page{padding:calc(env(safe-area-inset-top) + 18px) 16px calc(var(--nav-h) + env(safe-area-inset-bottom) + 20px);animation:fadeUp .22s ease}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-    .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(5,7,15,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100}
-    .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 4px;transition:color .2s;-webkit-tap-highlight-color:transparent}
+    .page{padding:calc(env(safe-area-inset-top) + 18px) 16px calc(var(--nav-h) + env(safe-area-inset-bottom) + 24px);animation:fadeUp .22s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(6,9,17,.9);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-top:1px solid var(--border);display:flex;z-index:100}
+    .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 0;transition:color .2s;-webkit-tap-highlight-color:transparent}
     .nav-btn.active{color:var(--gold)}
-    .nav-icon{font-size:18px;line-height:1}
-    .nav-label{font-size:10px;font-weight:600;letter-spacing:.03em}
-    .card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px}
-    .card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px}
-    .page-title{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
-    .sec{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:18px 0 8px}
-    .big-num{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--gold);letter-spacing:-.02em;line-height:1}
-    .med-num{font-family:var(--mono);font-size:17px;font-weight:700;line-height:1}
-    .sm-num{font-family:var(--mono);font-size:13px;line-height:1}
-    .lbl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
-    .tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:4px}
+    .nav-icon{font-size:19px;line-height:1;padding:4px 16px;border-radius:999px;transition:background .25s}
+    .nav-btn.active .nav-icon{background:var(--gold-bg)}
+    .nav-label{font-size:11px;font-weight:600;letter-spacing:.02em}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 45%),var(--bg2);border:1px solid var(--border);border-radius:20px;padding:18px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
+    .card-sm{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0) 50%),var(--bg2);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+    .page-title{font-size:27px;font-weight:800;letter-spacing:-.03em;margin-bottom:16px}
+    .sec{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin:22px 0 10px}
+    .big-num{font-family:var(--mono);font-size:34px;font-weight:700;color:var(--gold);letter-spacing:-.03em;line-height:1}
+    .med-num{font-family:var(--mono);font-size:19px;font-weight:700;line-height:1}
+    .sm-num{font-family:var(--mono);font-size:15px;line-height:1}
+    .lbl{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+    .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:6px}
     .tag-gold{background:var(--gold-bg);color:var(--gold);border:1px solid rgba(240,180,41,.25)}
     .tag-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,.25)}
     .tag-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,.25)}
-    .tag-blue{background:rgba(96,165,250,.09);color:var(--blue);border:1px solid rgba(96,165,250,.25)}
-    .tag-purple{background:rgba(167,139,250,.09);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+    .tag-blue{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.25)}
+    .tag-purple{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
     .fb{display:flex;align-items:center;justify-content:space-between}
     .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
     .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-    .sb{display:flex;flex-direction:column;gap:3px}
-    .div{height:1px;background:var(--border);margin:12px 0}
-    .prg{background:var(--bg3);border-radius:6px;height:6px;overflow:hidden;margin:8px 0}
-    .prg-f{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .5s}
-    .nwbar{display:flex;height:5px;border-radius:4px;overflow:hidden;margin:10px 0 8px;gap:2px}
-    .nwseg{height:100%;border-radius:2px}
-    .cdg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}
-    .cdu{background:var(--bg3);border-radius:10px;padding:8px 4px;text-align:center}
-    .cdn{font-family:var(--mono);font-size:19px;font-weight:700;color:var(--gold);line-height:1}
-    .cdl{font-size:9px;color:var(--muted);margin-top:2px;font-weight:600;letter-spacing:.06em}
-    .pills{display:flex;background:var(--bg3);border-radius:10px;padding:3px;gap:2px;margin-bottom:12px}
-    .pill{flex:1;padding:7px 4px;border:none;background:none;color:var(--muted);border-radius:7px;font-family:var(--sans);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
-    .pill.on{background:var(--bg2);color:var(--gold);box-shadow:0 1px 6px rgba(0,0,0,.5)}
-    .mbtn{padding:5px 9px;border-radius:6px;border:none;cursor:pointer;font-family:var(--sans);font-size:10px;font-weight:700;-webkit-tap-highlight-color:transparent}
-    .plc{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 12px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;-webkit-tap-highlight-color:transparent}
-    .plc:active{opacity:.7}
+    .sb{display:flex;flex-direction:column;gap:4px}
+    .div{height:1px;background:var(--border);margin:14px 0}
+    .prg{background:var(--bg3);border-radius:8px;height:8px;overflow:hidden;margin:10px 0}
+    .prg-f{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .5s}
+    .nwbar{display:flex;height:6px;border-radius:4px;overflow:hidden;margin:14px 0 12px;gap:2px}
+    .nwseg{height:100%;border-radius:2px;transition:flex .5s}
+    .cdg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+    .cdu{background:var(--bg3);border-radius:12px;padding:10px 2px;text-align:center}
+    .cdn{font-family:var(--mono);font-size:21px;font-weight:700;color:var(--gold);line-height:1}
+    .cdl{font-size:10px;color:var(--muted);margin-top:4px;font-weight:600;letter-spacing:.05em}
+    .pills{display:flex;background:var(--bg3);border-radius:12px;padding:4px;gap:3px;margin-bottom:14px}
+    .pill{flex:1;padding:9px 4px;border:none;background:none;color:var(--muted);border-radius:9px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+    .pill.on{background:var(--bg2);color:var(--gold);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+    .mbtn{padding:7px 10px;border-radius:8px;border:none;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:700;-webkit-tap-highlight-color:transparent}
+    .chip{background:var(--bg3);border:1px solid var(--border2);color:var(--muted);border-radius:9px;padding:7px 12px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .chip.gold{background:var(--gold);border-color:var(--gold);color:var(--bg)}
+    .chip:active{opacity:.75}
+    .plc{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0) 50%),var(--bg2);border:1px solid var(--border);border-radius:18px;padding:16px 14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);-webkit-tap-highlight-color:transparent;transition:transform .12s}
+    .plc:active{opacity:.8;transform:scale(.985)}
     .pacc{width:4px;border-radius:2px;flex-shrink:0;align-self:stretch;min-height:52px}
-    .back{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;padding:0;margin-bottom:14px;-webkit-tap-highlight-color:transparent}
-    .chwrap{position:relative;height:185px;margin-top:10px}
-    .inv-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+    .back{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;padding:6px 0;margin-bottom:12px;-webkit-tap-highlight-color:transparent}
+    .chwrap{position:relative;height:190px;margin-top:12px}
+    .inv-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
     .inv-row:last-child{border-bottom:none}
-    .tkr{font-family:var(--mono);font-size:10px;font-weight:700;background:var(--bg3);border:1px solid var(--border2);color:var(--muted);padding:2px 6px;border-radius:4px}
-    .hwrap{overflow-x:auto;margin-top:10px;border-radius:10px;border:1px solid var(--border)}
+    .tkr{font-family:var(--mono);font-size:11px;font-weight:700;background:var(--bg3);border:1px solid var(--border2);color:var(--muted);padding:3px 7px;border-radius:6px;min-width:52px;text-align:center}
+    .hwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:10px;border-radius:12px;border:1px solid var(--border)}
     .htbl{width:100%;border-collapse:collapse;min-width:360px}
-    .htbl th{color:var(--muted);font-weight:700;font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:8px;text-align:right;background:var(--bg3);border-bottom:1px solid var(--border);white-space:nowrap}
+    .htbl th{color:var(--muted);font-weight:700;font-size:11px;letter-spacing:.03em;text-transform:uppercase;padding:9px 8px;text-align:right;background:var(--bg3);border-bottom:1px solid var(--border);white-space:nowrap}
     .htbl th:first-child{text-align:left}
-    .htbl td{padding:7px 8px;border-bottom:1px solid var(--dim);font-family:var(--mono);text-align:right;font-size:11px;white-space:nowrap}
-    .htbl td:first-child{text-align:left;font-family:var(--sans);font-weight:600;font-size:11px;color:var(--muted)}
+    .htbl td{padding:8px;border-bottom:1px solid var(--dim);font-family:var(--mono);text-align:right;font-size:12px;white-space:nowrap}
+    .htbl td:first-child{text-align:left;font-family:var(--sans);font-weight:600;font-size:12px;color:var(--muted)}
     .htbl tr:last-child td{border-bottom:none;color:var(--gold);font-weight:700}
     .htbl tr:last-child td:first-child{color:var(--gold)}
-    .snap{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:14px;margin-top:8px}
-    .snap-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-    .snap-in{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 10px;width:130px;text-align:right;-webkit-appearance:none}
-    .snap-in:focus{outline:none;border-color:var(--gold)}
-    .snap-btn{background:var(--gold);color:var(--bg);border:none;border-radius:8px;padding:10px;font-family:var(--sans);font-size:13px;font-weight:800;cursor:pointer;width:100%;margin-top:6px}
-    .si{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+    .snap{background:var(--bg3);border:1px solid var(--border2);border-radius:16px;padding:16px;margin-top:10px}
+    .snap-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .snap-in{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:var(--mono);font-size:16px;padding:9px 12px;width:150px;text-align:right;-webkit-appearance:none}
+    .snap-in:focus,.si-in:focus,.h-in:focus{outline:none;border-color:var(--gold)}
+    .snap-btn{background:var(--gold);color:var(--bg);border:none;border-radius:12px;padding:14px;font-family:var(--sans);font-size:16px;font-weight:800;cursor:pointer;width:100%;margin-top:8px}
+    .snap-btn:active{opacity:.85}
+    .si{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
     .si:last-child{border-bottom:none}
-    .si-in{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 10px;text-align:right;width:115px;-webkit-appearance:none}
-    .si-in:focus{outline:none;border-color:var(--gold)}
-    .btn-d{background:var(--red-bg);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:10px;padding:12px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:8px}
-    .btn-g{background:var(--gold-bg);border:1px solid rgba(240,180,41,.35);color:var(--gold);border-radius:10px;padding:12px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;display:block;text-align:center}
-    .btn-n{background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:12px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;display:block;text-align:center}
+    .si-l{font-size:14px}
+    .si-h{font-size:12px;color:var(--muted);margin-top:2px}
+    .si-in{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:var(--mono);font-size:16px;padding:9px 12px;text-align:right;width:140px;flex-shrink:0;-webkit-appearance:none}
+    .h-in{background:var(--bg3);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-family:var(--mono);font-size:16px;padding:8px 8px;width:100%;min-width:0;-webkit-appearance:none}
+    .h-grid{display:grid;grid-template-columns:1.1fr 1fr 1.1fr 34px;gap:6px;align-items:center;margin-bottom:6px}
+    .h-x{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;height:38px}
+    .set-h{font-size:13px;font-weight:700;letter-spacing:.06em;margin-bottom:6px}
+    .note{font-size:13px;color:var(--muted);line-height:1.55}
+    .btn-d{background:var(--red-bg);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:12px;padding:14px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-top:10px}
+    .btn-g{background:var(--gold-bg);border:1px solid rgba(240,180,41,.35);color:var(--gold);border-radius:12px;padding:14px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-top:10px;display:block;text-align:center}
+    .btn-n{background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:12px;padding:14px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-top:10px;display:block;text-align:center}
     /* Device lock + first-run screens */
     .gate{position:fixed;inset:0;background:var(--bg);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;overflow-y:auto}
-    .gate-in{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--mono);font-size:22px;letter-spacing:.4em;padding:12px;text-align:center;width:190px;-webkit-appearance:none}
+    .gate-in{background:var(--bg3);border:1px solid var(--border2);border-radius:14px;color:var(--text);font-family:var(--mono);font-size:24px;letter-spacing:.4em;padding:14px;text-align:center;width:210px;-webkit-appearance:none}
     .gate-in:focus{outline:none;border-color:var(--gold)}
-    .gate-w{width:100%;max-width:340px}
-    .demo-b{background:var(--gold-bg);border:1px solid rgba(240,180,41,.3);color:var(--gold);border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;margin-bottom:12px;text-align:center}
-    .ph{border-radius:0 12px 12px 0;padding:12px 14px 12px 16px;margin-bottom:8px;background:var(--bg2);border:1px solid var(--border);border-left-width:3px}
-    .ib{background:linear-gradient(135deg,var(--gold-bg),rgba(240,180,41,.12));border:1px solid rgba(240,180,41,.3);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .ib-btn{background:var(--gold);color:var(--bg);border:none;border-radius:8px;padding:7px 14px;font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer}
+    .gate-w{width:100%;max-width:360px}
+    .demo-b{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--gold-bg);border:1px solid rgba(240,180,41,.3);color:var(--gold);border-radius:14px;padding:10px 12px 10px 14px;font-size:13px;font-weight:600;margin-bottom:16px}
+    .demo-b button{background:var(--gold);color:var(--bg);border:none;border-radius:9px;padding:7px 11px;font-family:var(--sans);font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap}
+    .live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;background:var(--bg2);border:1px solid var(--border);border-radius:999px;padding:6px 11px;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:var(--sans)}
+    .live i{width:7px;height:7px;border-radius:50%;display:inline-block}
+    .ph{border-radius:0 16px 16px 0;padding:14px 14px 14px 16px;margin-bottom:8px;background:var(--bg2);border:1px solid var(--border);border-left-width:3px}
+    .ib{background:linear-gradient(135deg,var(--gold-bg),rgba(240,180,41,.13));border:1px solid rgba(240,180,41,.3);border-radius:16px;padding:14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .ib-btn{background:var(--gold);color:var(--bg);border:none;border-radius:10px;padding:9px 16px;font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer}
     .ldg{display:flex;align-items:center;justify-content:center;height:100dvh;flex-direction:column;gap:14px}
-    @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
-    .ldg-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1s ease infinite}
+    @keyframes pulse{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .ldg-dot{width:10px;height:10px;border-radius:50%;background:var(--gold);animation:pulse 1s ease infinite}
     ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+    @media(max-width:360px){
+      .page{padding-left:12px;padding-right:12px}
+      .g4{grid-template-columns:1fr 1fr}
+      .big-num{font-size:30px}
+      .si-in{width:120px}
+    }
   </style>
 </head>
 <body>
@@ -154,10 +178,52 @@ var SKEY = 'findash_v5';
 var WKEY = 'findash_seen';   // welcome screen dismissed — separate from saved data
 var EXP  = 0.22;           // 22% expense ratio: mgmt ~8% + rates + insurance + maintenance
 var PC   = ['#f0b429','#34d399','#60a5fa','#a78bfa'];
+var CUR_YR = new Date().getFullYear();
 
-// ─── Seed historical snapshots from purchase year to 2026 ─────
+Chart.defaults.font.family = "'Outfit', system-ui, sans-serif";
+Chart.defaults.color = '#7a8bab';
+
+// ─── Dates ────────────────────────────────────────────────────
+// Ages and payoff horizons are stored as calendar months ('YYYY-MM'), not as
+// "40 years old" / "168 months to go". A relative number never moves, so the
+// countdowns would read the same every day the app is opened.
+function ym(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function ymParse(v){
+  var m=/^(\d{4})-(\d{1,2})$/.exec(String(v||'').trim());
+  if(!m||+m[2]<1||+m[2]>12) return null;
+  return new Date(+m[1],+m[2]-1,1);
+}
+function ymAdd(months){ var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()+months); return ym(d); }
+function monthsUntil(d){ var n=new Date(); return Math.max(0,(d.getFullYear()-n.getFullYear())*12+d.getMonth()-n.getMonth()); }
+// Calendar-accurate years / months / days between now and a future date
+function ymdUntil(to){
+  var now=new Date(); now.setHours(0,0,0,0);
+  if(to<=now) return [0,0,0];
+  var y=to.getFullYear()-now.getFullYear(), m=to.getMonth()-now.getMonth(), d=to.getDate()-now.getDate();
+  if(d<0){ m--; d+=new Date(to.getFullYear(),to.getMonth(),0).getDate(); }
+  if(m<0){ y--; m+=12; }
+  return [y,m,d];
+}
+function ago(ts){
+  if(!ts) return '';
+  var s=Math.round((Date.now()-ts)/1000);
+  if(s<60) return 'just now';
+  if(s<3600) return Math.round(s/60)+'m ago';
+  if(s<86400) return Math.round(s/3600)+'h ago';
+  return Math.round(s/86400)+'d ago';
+}
+
+// Derived view of saved state: real age and months-to-debt-free, computed
+// from the stored dates so every tab sees figures that move with time.
+function derive(s){
+  var dob=ymParse(s.dob), df=ymParse(s.dfDate), now=new Date();
+  var age=dob?Math.floor(((now.getFullYear()-dob.getFullYear())*12+now.getMonth()-dob.getMonth())/12):(s.age||0);
+  return Object.assign({},s,{age:age,dfMonths:df?monthsUntil(df):(s.dfMonths||0)});
+}
+
+// ─── Seed historical snapshots from purchase year to this year ─
 function seedSnaps(p) {
-  var n = 2026 - p.yr;
+  var n = CUR_YR - p.yr;
   // A property bought this year has no history to seed, but still needs one
   // row so the charts and tables have something to draw.
   if (n <= 0) {
@@ -223,20 +289,169 @@ var DEMO_ASX = [
 ];
 
 var DEFAULT = {
-  demo:true,
+  demo:true, schema:2,
   ownerName:'My Dashboard',
-  age:40, retAge:60, superAge:60, salary:90500,
-  dfMonths:168, target:78566,
+  // The sample person is always 40 and always 14 years from paying off the home.
+  dob:ymAdd(-480), retAge:60, superAge:60, salary:90500,
+  dfDate:ymAdd(168), target:78566,
   pprName:'Primary Residence', pprAddr:'', pprNote:'',
   pprBoughtYr:2015, pprBoughtCost:560000, pprReno:30000,
-  pprVal:800000, pprLoan:320000, totalLoan:0, loanRate:6.09,
+  pprVal:800000, pprLoan:320000, pprRate:6.09, totalLoan:0, loanRate:6.09,
   expRatio:22, rentGrow:3.5, propGrow:5.0,
   superBal:130000, superContrib:10860, superGrow:7.0,
-  usUSD:8000, audusd:0.698,
-  asxP:15000, asxT:0, crypto:3000, invGrow:7.0,
+  audusd:0.698, invGrow:7.0,
   holdUS:DEMO_US, holdASX:DEMO_ASX, holdCrypto:DEMO_CRYPTO,
-  props: PROPS_RAW.map(function(p){return Object.assign({},p,{snaps:seedSnaps(p)});})
+  props: PROPS_RAW.map(function(p){return Object.assign({},p,{snaps:seedSnaps(p)});}),
+  updatedAt:0
 };
+
+// ─── Holdings ─────────────────────────────────────────────────
+// Share and crypto values are always units × latest price, so the Invest tab,
+// net worth and every projection read the same number.
+//   US     {t, n, qty, px (USD), u (USD value — older saves)}
+//   ASX    {t, n, qty, px (AUD), v (AUD value — older saves), trust}
+//   Crypto {t, n, qty, px (AUD), v (AUD value — older saves)}
+// m:true marks a holding with no ticker (cash, a managed fund): it is never
+// priced live, its value is simply qty × px.
+var KINDS = [
+  {id:'us',     key:'holdUS',     label:'US Shares',  cur:'USD', col:'#f0b429', ph:'AAPL'},
+  {id:'asx',    key:'holdASX',    label:'ASX Shares', cur:'AUD', col:'#34d399', ph:'VAS'},
+  {id:'crypto', key:'holdCrypto', label:'Crypto',     cur:'AUD', col:'#a78bfa', ph:'BTC'},
+];
+var CGIDS={BTC:'bitcoin',ETH:'ethereum',SOL:'solana',BNB:'binancecoin',XRP:'ripple',ADA:'cardano',DOGE:'dogecoin',
+  DOT:'polkadot',AVAX:'avalanche-2',LINK:'chainlink',LTC:'litecoin',TRX:'tron',XLM:'stellar',ATOM:'cosmos',
+  POL:'polygon-ecosystem-token',MATIC:'polygon-ecosystem-token',SHIB:'shiba-inu',UNI:'uniswap',NEAR:'near',
+  SUI:'sui',TON:'the-open-network',HBAR:'hedera-hashgraph',USDT:'tether',USDC:'usd-coin'};
+
+function asxSym(t){ t=String(t||'').toUpperCase().trim(); return !t?'':/\.AX$/.test(t)?t:t+'.AX'; }
+function pxKey(kind,h){
+  if(!h||h.m||!h.t) return null;
+  var t=String(h.t).toUpperCase().trim();
+  return kind==='crypto'?(CGIDS[t]?'c:'+t:null):kind==='asx'?'a:'+asxSym(t):'u:'+t;
+}
+function basePx(kind,h){
+  if(h.px>0) return h.px;
+  var q=+h.qty||0; if(!q) return 0;
+  return kind==='us'?(+h.u||0)/q:(+h.v||0)/q;
+}
+function quote(kind,h,mk){ var k=pxKey(kind,h), q=k&&mk&&mk.px[k]; return q&&q.p>0?q:null; }
+function fxOf(mk,s){ return (mk&&mk.fx>0)?mk.fx:(s&&s.audusd>0?s.audusd:0.65); }   // USD per AUD
+// AUD value of one holding
+function holdVal(kind,h,mk,s){
+  var q=quote(kind,h,mk), v=(+h.qty||0)*(q?q.p:basePx(kind,h));
+  return kind==='us'?v/fxOf(mk,s):v;
+}
+function invTotals(s,mk){
+  var o={us:0,asx:0,crypto:0,day:0,live:0,count:0};
+  KINDS.forEach(function(k){
+    (s[k.key]||[]).forEach(function(h){
+      var v=holdVal(k.id,h,mk,s), q=quote(k.id,h,mk);
+      o[k.id]+=v; o.count++;
+      if(q){ o.live++; if(q.c) o.day+=v-v/(1+q.c/100); }
+    });
+  });
+  o.total=o.us+o.asx+o.crypto;
+  return o;
+}
+
+// ─── Live prices ──────────────────────────────────────────────
+// Prices are cached on the device, so the last good figures survive a reload,
+// a flaky connection or a backgrounded PWA. Only ticker symbols are sent to
+// the price services — never quantities, balances or anything about you.
+var PXKEY='findash_px';
+function loadMarket(){
+  try{ var m=JSON.parse(localStorage.getItem(PXKEY)); if(m&&m.px) return m; }catch(e){}
+  return {px:{},fx:0,ts:0,src:0};
+}
+function getJSON(url,ms){
+  var ctl=typeof AbortController!=='undefined'?new AbortController():null;
+  var t=setTimeout(function(){ if(ctl) ctl.abort(); },ms||9000);
+  return fetch(url,ctl?{signal:ctl.signal}:{})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .finally(function(){ clearTimeout(t); });
+}
+// Yahoo Finance sends no CORS headers, so a browser cannot read it directly.
+// Try direct first (in case that changes), then public CORS relays, starting
+// with whichever relay worked last time.
+var RELAYS=[
+  function(u){ return u; },
+  function(u){ return 'https://corsproxy.io/?url='+encodeURIComponent(u); },
+  function(u){ return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u); },
+  function(u){ return 'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u); },
+];
+function yahooQuote(sym,start){
+  var url='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(sym)+'?interval=1d&range=1d';
+  function attempt(n){
+    if(n>=RELAYS.length) return Promise.reject(new Error('no price for '+sym));
+    var idx=(start+n)%RELAYS.length;
+    return getJSON(RELAYS[idx](url),8000).then(function(d){
+      var m=((((d||{}).chart||{}).result||[])[0]||{}).meta||{};
+      if(!(m.regularMarketPrice>0)) throw new Error('empty');
+      var prev=m.previousClose||m.chartPreviousClose;
+      return {p:m.regularMarketPrice,c:prev?(m.regularMarketPrice-prev)/prev*100:0,src:idx};
+    }).catch(function(){ return attempt(n+1); });
+  }
+  return attempt(0);
+}
+function refreshMarket(s,prev){
+  var next={px:Object.assign({},prev.px),fx:prev.fx,ts:prev.ts,src:prev.src||0,got:0,want:0};
+  var now=Date.now(), jobs=[];
+
+  var coins={};
+  (s.holdCrypto||[]).forEach(function(h){ var k=pxKey('crypto',h); if(k) coins[k.slice(2)]=CGIDS[k.slice(2)]; });
+  var coinTs=Object.keys(coins);
+  if(coinTs.length){
+    next.want+=coinTs.length;
+    jobs.push(getJSON('https://api.coingecko.com/api/v3/simple/price?vs_currencies=aud&include_24hr_change=true&ids='+
+      coinTs.map(function(t){return coins[t];}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(','))
+      .then(function(d){
+        coinTs.forEach(function(t){ var r=d[coins[t]]; if(r&&r.aud>0){ next.px['c:'+t]={p:r.aud,c:r.aud_24h_change||0,ts:now}; next.got++; } });
+      }));
+  }
+
+  jobs.push(getJSON('https://api.frankfurter.dev/v1/latest?base=USD&symbols=AUD')
+    .catch(function(){ return getJSON('https://api.frankfurter.app/latest?from=USD&to=AUD'); })
+    .then(function(d){ var a=d&&d.rates&&d.rates.AUD; if(a>0) next.fx=1/a; }));
+
+  var syms={};
+  (s.holdUS||[]).forEach(function(h){ var k=pxKey('us',h); if(k) syms[k]=k.slice(2); });
+  (s.holdASX||[]).forEach(function(h){ var k=pxKey('asx',h); if(k) syms[k]=k.slice(2); });
+  Object.keys(syms).forEach(function(k){
+    next.want++;
+    jobs.push(yahooQuote(syms[k],next.src).then(function(r){ next.px[k]={p:r.p,c:r.c,ts:now}; next.src=r.src; next.got++; }));
+  });
+
+  return Promise.all(jobs.map(function(j){ return j.catch(function(){}); })).then(function(){
+    if(next.got) next.ts=now;
+    try{ localStorage.setItem(PXKEY,JSON.stringify({px:next.px,fx:next.fx,ts:next.ts,src:next.src})); }catch(e){}
+    return next;
+  });
+}
+
+// ─── Upgrading older saves ────────────────────────────────────
+// Before schema 2, share and crypto totals were typed into Settings separately
+// from the holdings lists, and age / debt-free were relative numbers. Turn
+// those into holdings and dates without changing anyone's net worth.
+function sameList(a,b){ try{ return JSON.stringify(a)===JSON.stringify(b); }catch(e){ return false; } }
+function migrate(d){
+  if(!d||typeof d!=='object'||d.schema>=2) return d;
+  d=Object.assign({},d);
+  function manual(n,val,extra){ return Object.assign({t:'',n:n,qty:1,px:Math.round(val),m:true},extra||{}); }
+  function fix(key,demo,demoTot,rows){
+    var tot=rows.reduce(function(a,r){return a+(+r[1]||0);},0);
+    var list=d[key];
+    var stale=Array.isArray(list)&&sameList(list,demo)&&Math.abs(tot-demoTot)>1;
+    if(!Array.isArray(list)||stale)
+      d[key]=rows.filter(function(r){return +r[1]>0;}).map(function(r){return manual(r[0],+r[1],r[2]);});
+  }
+  fix('holdUS',DEMO_US,8000,[['US shares',d.usUSD]]);
+  fix('holdASX',DEMO_ASX,15000,[['ASX shares',d.asxP],['ASX shares (trust)',d.asxT,{trust:true}]]);
+  fix('holdCrypto',DEMO_CRYPTO,3000,[['Crypto',d.crypto]]);
+  if(!d.dob)    d.dob=(CUR_YR-(+d.age||40))+'-01';
+  if(!d.dfDate) d.dfDate=ymAdd(+d.dfMonths||0);
+  d.schema=2;
+  return d;
+}
 
 // ─── Device lock ──────────────────────────────────────────────
 // IMPORTANT: this is a privacy screen, not encryption. It stops someone
@@ -272,10 +487,32 @@ function importData(file,onDone){
     if(!d||typeof d!=='object'||!Array.isArray(d.props)){ alert("That doesn't look like a dashboard backup."); return; }
     // DEFAULT fills in fields the file predates, but its sample home loan must
     // not be inherited — a backup with no pprLoan means no home loan, not $320k.
-    onDone(Object.assign({},DEFAULT,{pprLoan:0},d,{demo:false}));
+    onDone(Object.assign({},DEFAULT,{pprLoan:0},migrate(d),{demo:false}));
   };
   r.onerror=function(){ alert("Couldn't read that file."); };
   r.readAsText(file);
+}
+
+// Anything the user saves is their own data, never a sample — stamp demo:false
+// or the loader would discard it as a stale sample snapshot.
+function saveState(next){
+  var n=Object.assign({},next,{demo:false,updatedAt:Date.now()});
+  delete n.age; delete n.dfMonths;   // derived from dob / dfDate on every load
+  try{ localStorage.setItem(SKEY,JSON.stringify(n)); }catch(e){ alert("Couldn't save — your browser storage may be full or disabled."); }
+  return n;
+}
+
+// Number input that keeps its own draft, so a field can be emptied while
+// typing instead of snapping to 0 on every keystroke. Commits valid numbers.
+function NumIn(p){
+  var _d=useState(String(p.value==null?'':p.value)); var d=_d[0],setD=_d[1];
+  var focused=useRef(false);
+  useEffect(function(){ if(!focused.current) setD(String(p.value==null?'':p.value)); },[p.value]);
+  return html`<input class=${p.cls||'si-in'} type="number" inputMode="decimal" step=${p.step||'any'} value=${d} placeholder=${p.ph||''}
+    style=${p.style||''}
+    onFocus=${function(){focused.current=true;}}
+    onBlur=${function(){ focused.current=false; if(d===''||isNaN(parseFloat(d))) setD(String(p.value==null?'':p.value)); }}
+    onInput=${function(e){ var v=e.target.value; setD(v); var n=parseFloat(v); if(!isNaN(n)) p.onChange(n); }} />`;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
@@ -285,45 +522,53 @@ function pc(n){ return(n>=0?'+':'')+(n||0).toFixed(1)+'%'; }
 function cc(n){ return n>=0?'var(--green)':'var(--red)'; }
 
 // ─── Financial calculations ───────────────────────────────────
-function calc(s) {
+function calc(s,mk) {
   var gr = s.props.reduce(function(a,p){return a+p.rent*52;},0);
-  var nr = gr*(1-s.expRatio/100) - s.totalLoan*s.loanRate/100;
+  // Investment debt is the sum of each property's own loan; the old single
+  // "investment loans" figure only applies to saves with no properties listed.
+  var il = s.props.length?s.props.reduce(function(a,p){return a+(+p.loan||0);},0):(s.totalLoan||0);
+  var nr = gr*(1-s.expRatio/100) - il*s.loanRate/100;
   var ipV= s.props.reduce(function(a,p){return a+p.val;},0);
   var pV = ipV+s.pprVal;
-  // totalLoan is investment-property debt: it reduces equity and is charged
+  // il is investment-property debt: it reduces equity and is charged
   // against rental income. pprLoan is the home mortgage — it reduces equity
   // but must not be charged against rent, or a person with a home and no
   // rentals shows negative "passive income".
   var hl = s.pprLoan||0;
-  var pE = pV-s.totalLoan-hl;
-  var usA= s.usUSD/s.audusd;
-  var inv= usA+s.asxP+s.asxT+s.crypto;
+  var debt=il+hl;
+  var pE = pV-debt;
+  var it = invTotals(s,mk);
+  var inv= it.total;
   var nw = pE+s.superBal+inv;
   var yR = Math.max(0,s.retAge-s.age);
   var yS = Math.max(0,s.superAge-s.age);
   var now= new Date();
-  var rd = new Date(now); rd.setFullYear(now.getFullYear()+yR);
-  var dd = new Date(now); dd.setMonth(now.getMonth()+s.dfMonths);
-  var rtD= Math.max(0,Math.round((rd-now)/864e5));
-  var dfD= Math.max(0,Math.round((dd-now)/864e5));
+  var dob= ymParse(s.dob);
+  var rd = dob?new Date(dob.getFullYear()+(+s.retAge||0),dob.getMonth(),1):new Date(now.getFullYear()+yR,now.getMonth(),1);
+  var dd = ymParse(s.dfDate)||new Date(now.getFullYear(),now.getMonth()+s.dfMonths,1);
+  var rC = ymdUntil(rd), dC = ymdUntil(dd);
   var r  = s.superGrow/100;
   var sp = Array.from({length:21},function(_,i){
-    return i===0?Math.round(s.superBal):Math.round(s.superBal*Math.pow(1+r,i)+s.superContrib*((Math.pow(1+r,i)-1)/r));
+    var f=r?(Math.pow(1+r,i)-1)/r:i;
+    return Math.round(s.superBal*Math.pow(1+r,i)+s.superContrib*f);
   });
   var sa = sp[Math.min(yS,20)];
+  var dfY= s.dfMonths/12;
+  // Debt runs down evenly to zero at the debt-free date
+  function left(i){ return dfY>0?Math.max(0,1-i/dfY):0; }
   var pp = Array.from({length:16},function(_,i){
-    return Math.round(gr*Math.pow(1+s.rentGrow/100,i)*(1-s.expRatio/100)-(i<s.dfMonths/12?s.totalLoan*s.loanRate/100:0));
+    return Math.round(gr*Math.pow(1+s.rentGrow/100,i)*(1-s.expRatio/100)-il*left(i)*s.loanRate/100);
   });
   var nwp= Array.from({length:21},function(_,i){
-    return Math.round(pV*Math.pow(1+s.propGrow/100,i)-Math.max(0,s.totalLoan*Math.pow(.88,i))-Math.max(0,hl*Math.pow(.88,i))+sp[Math.min(i,20)]+inv*Math.pow(1+s.invGrow/100,i));
+    return Math.round(pV*Math.pow(1+s.propGrow/100,i)-debt*left(i)+sp[Math.min(i,20)]+inv*Math.pow(1+s.invGrow/100,i));
   });
-  return {gr:gr,nr:nr,pV:pV,ipV:ipV,pE:pE,usA:usA,inv:inv,nw:nw,hl:hl,
-    yR:yR,sa:sa,sp:sp,pp:pp,nwp:nwp,
-    gY:ipV?gr/ipV*100:0, pNow:Math.min(100,Math.max(0,nr/s.target*100)),
-    pPost:Math.min(100,Math.max(0,pp[Math.min(Math.ceil(s.dfMonths/12),15)]/s.target*100)),
+  return {il:il,gr:gr,nr:nr,pV:pV,ipV:ipV,pE:pE,inv:inv,it:it,nw:nw,hl:hl,debt:debt,
+    yR:yR,yS:yS,sa:sa,sp:sp,pp:pp,nwp:nwp,
+    gY:ipV?gr/ipV*100:0, pNow:s.target?Math.min(100,Math.max(0,nr/s.target*100)):0,
+    pPost:s.target?Math.min(100,Math.max(0,pp[Math.min(Math.ceil(dfY),15)]/s.target*100)):0,
     rd:rd,dd:dd,
-    rYr:Math.floor(rtD/365),rMo:Math.floor((rtD%365)/30),rDy:rtD%30,
-    dYr:Math.floor(dfD/365),dMo:Math.floor((dfD%365)/30),dDy:dfD%30,
+    rYr:rC[0],rMo:rC[1],rDy:rC[2],
+    dYr:dC[0],dMo:dC[1],dDy:dC[2],
     retP:pp[Math.min(yR,15)], retNW:nwp[Math.min(yR,20)]};
 }
 
@@ -335,8 +580,8 @@ function mkOpts(yf) {
       tooltip:{backgroundColor:'#1a2038',titleColor:'#8892b0',borderColor:'#1e2a45',borderWidth:1,
                callbacks:{label:function(ctx){return ' '+(ctx.dataset.label||'')+' '+yf(ctx.raw);}}}},
     scales:{
-      y:{ticks:{color:'#5a6a88',font:{family:"'Space Mono'",size:10},callback:yf},grid:{color:'#1c2540'},border:{display:false}},
-      x:{ticks:{color:'#5a6a88',font:{size:10},maxTicksLimit:8},grid:{display:false},border:{display:false}}
+      y:{ticks:{color:'#7a8bab',font:{family:"'Space Mono', ui-monospace, monospace",size:11},callback:yf,maxTicksLimit:6},grid:{color:'#1a2340'},border:{display:false}},
+      x:{ticks:{color:'#7a8bab',font:{size:12},maxTicksLimit:7,maxRotation:0},grid:{display:false},border:{display:false}}
     }};
 }
 function useChart(factory,deps) {
@@ -393,116 +638,134 @@ function DonutChart(p) {
       backgroundColor:p.segs.map(function(s){return s.c;}),
       borderColor:'#0b0f1a',borderWidth:3}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'70%',
-      plugins:{legend:{position:'right',labels:{color:'#8892b0',font:{size:11,family:"'Outfit'"},boxWidth:10,padding:10}},
+      plugins:{legend:{position:'right',labels:{color:'#c3cde0',font:{size:13,family:"'Outfit', system-ui, sans-serif"},boxWidth:10,padding:12,usePointStyle:true,pointStyle:'circle'}},
                tooltip:{backgroundColor:'#1a2038',callbacks:{label:function(ctx){return' '+ff(ctx.raw);}}}}
     }});
   },[p.segs.map(function(s){return s.v;}).join(',')]);
   return html`<div style="position:relative;height:170px"><canvas ref=${ref}></canvas></div>`;
 }
 
+// Live-price status — tap to refresh
+function LivePill(p){
+  var st=p.status, ts=p.mkt.ts;
+  var col=st==='live'?'var(--green)':st==='loading'?'var(--muted)':st==='partial'?'var(--blue)':'var(--gold)';
+  var txt=st==='loading'?'Updating…'
+    :st==='live'?'Live · '+ago(ts)
+    :st==='partial'?'Partly live · '+ago(ts)
+    :st==='none'?'No live prices'
+    :ts?'Offline · '+ago(ts):'Offline';
+  return html`<button class="live" style="color:${col}" onClick=${p.onRefresh} title="Refresh prices">
+    <i style="background:${col};${st==='loading'||st==='live'?'animation:pulse 1.6s ease infinite':''}"></i>${txt}
+    <span style="color:var(--muted);font-size:14px;line-height:1;${st==='loading'?'animation:spin 1s linear infinite;display:inline-block':''}">↻</span>
+  </button>`;
+}
+
+function Countdown(p){
+  return html`<div class="card-sm">
+    <div class="lbl">${p.title}</div>
+    ${p.done
+      ? html`<div style="text-align:center;padding:14px 0 6px"><div style="font-size:26px">🎉</div><div style="font-size:14px;font-weight:700;color:var(--green);margin-top:6px">${p.done}</div></div>`
+      : html`<div class="cdg">${[['YRS',p.v[0]],['MO',p.v[1]],['DAYS',p.v[2]]].map(function(u){return html`<div class="cdu"><div class="cdn">${u[1]}</div><div class="cdl">${u[0]}</div></div>`;})}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:8px;text-align:center">${p.sub}</div>`}
+  </div>`;
+}
+
 // ─── TAB: OVERVIEW ────────────────────────────────────────────
 function TabOverview(p) {
   var s=p.s,c=p.c,ip=p.ip,onI=p.onI;
-  var totalRent=s.props.reduce(function(a,x){return a+x.rent;},0);
-  var postDebt=ff(c.pp[Math.min(Math.ceil(s.dfMonths/12),15)]);
   var hasIP=s.props.length>0;
+  var it=c.it;
+  var dOpt={month:'short',year:'numeric'};
+  var hr=new Date().getHours();
+  var greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  var segs=[['Property',c.pE,'var(--gold)'],['Super',s.superBal,'var(--blue)'],['Investments',c.inv,'var(--green)']];
   return html`
     <div class="page">
-      ${s.demo && html`<div class="demo-b">◈ Sample data — swap in your own figures under Forecast → Settings</div>`}
-      <div class="fb" style="margin-bottom:16px">
-        <div>
-          <div class="lbl">Portfolio</div>
-          <div style="font-size:21px;font-weight:800;letter-spacing:-.02em">${s.ownerName||'My Dashboard'}</div>
+      ${s.demo && html`<div class="demo-b"><span>◈ You're viewing sample data</span><button onClick=${function(){p.go('plan','set');}}>Use my figures</button></div>`}
+      <div class="fb" style="margin-bottom:18px;align-items:flex-end">
+        <div style="min-width:0">
+          <div style="font-size:14px;color:var(--muted)">${greet}</div>
+          <div style="font-size:25px;font-weight:800;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.ownerName||'My Dashboard'}</div>
         </div>
-        <div style="text-align:right;font-size:11px;color:var(--muted)">
-          <div>${new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div>
-          <div style="color:var(--green);font-weight:700;margin-top:2px">● Active</div>
-        </div>
+        ${it.count>0 && html`<${LivePill} mkt=${p.mkt} status=${p.status} onRefresh=${p.refresh} />`}
       </div>
 
-      ${ip && html`<div class="ib"><div><div style="font-size:13px;font-weight:800">📲 Install App</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Add to home screen</div></div><button class="ib-btn" onClick=${onI}>Install</button></div>`}
+      ${ip && html`<div class="ib"><div><div style="font-size:15px;font-weight:800">📲 Install the app</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Add it to your home screen</div></div><button class="ib-btn" onClick=${onI}>Install</button></div>`}
 
       <div class="card">
-        <div class="lbl">TOTAL NET WORTH</div>
-        <div class="big-num" style="margin-top:6px">${ff(c.nw)}</div>
+        <div class="lbl">Net worth</div>
+        <div class="big-num" style="margin-top:8px">${ff(c.nw)}</div>
+        ${it.live>0 && Math.abs(it.day)>=1 && html`<div style="font-size:14px;font-weight:600;margin-top:8px;color:${cc(it.day)}">${it.day>=0?'▲':'▼'} ${ff(Math.abs(it.day))} today <span style="color:var(--muted);font-weight:500">· investments</span></div>`}
         <div class="nwbar">
-          <div class="nwseg" style="flex:${c.pE};background:var(--gold)"></div>
-          <div class="nwseg" style="flex:${s.superBal};background:var(--blue)"></div>
-          <div class="nwseg" style="flex:${c.inv};background:var(--green)"></div>
+          ${segs.map(function(r){return html`<div class="nwseg" style="flex:${Math.max(0,r[1])};background:${r[2]}"></div>`;})}
         </div>
         <div class="g3">
-          ${[['■ Property',fm(c.pE),'var(--gold)'],['■ Super',fm(s.superBal),'var(--blue)'],['■ Invest',fm(c.inv),'var(--green)']].map(function(r){
-            return html`<div class="sb"><div style="font-size:10px;color:${r[2]};font-weight:700">${r[0]}</div><div class="sm-num" style="color:var(--text)">${r[1]}</div></div>`;
+          ${segs.map(function(r){
+            return html`<div class="sb"><div style="font-size:13px;color:var(--muted);font-weight:600"><span style="color:${r[2]}">●</span> ${r[0]}</div><div class="sm-num" style="color:var(--text);font-weight:700">${fm(r[1])}</div></div>`;
           })}
         </div>
+        ${c.debt>0 && html`<div style="font-size:13px;color:var(--muted);margin-top:12px">Property shown after ${fm(c.debt)} of loans</div>`}
       </div>
 
-      <div class="card">
-        <div class="fb"><div class="lbl">PASSIVE INCOME</div><span class="tag tag-gold">Net Rental</span></div>
-        ${hasIP?html`
-          <div class="fb" style="margin-top:8px;align-items:flex-end">
+      <div class="g2" style="margin-bottom:12px">
+        <${Countdown} title="🏁 Retirement" v=${[c.rYr,c.rMo,c.rDy]} sub=${'Age '+s.retAge+' · '+c.rd.toLocaleDateString('en-AU',dOpt)}
+          done=${c.rd<=new Date()?'Retirement age reached':null} />
+        <${Countdown} title="💳 Debt free" v=${[c.dYr,c.dMo,c.dDy]} sub=${c.dd.toLocaleDateString('en-AU',dOpt)}
+          done=${c.debt<=0?'No debt':null} />
+      </div>
+
+      ${hasIP ? html`
+        <div class="card">
+          <div class="fb"><div class="lbl">Passive income</div><span class="tag tag-gold">Net rental</span></div>
+          <div class="fb" style="margin-top:10px;align-items:flex-end">
             <div>
-              <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green)">${ff(c.nr)}<span style="font-size:11px;font-weight:400;color:var(--muted)">/yr</span></div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px">Target ${ff(s.target)}</div>
+              <div class="med-num" style="color:var(--green)">${ff(c.nr)}<span style="font-size:14px;font-weight:400;color:var(--muted)">/yr</span></div>
+              <div style="font-size:13px;color:var(--muted);margin-top:4px">Target ${ff(s.target)}</div>
             </div>
             <div style="text-align:right">
-              <div style="font-size:10px;color:var(--muted)">Post debt-free</div>
-              <div class="sm-num" style="color:var(--gold)">${postDebt}/yr</div>
+              <div style="font-size:13px;color:var(--muted)">Once debt-free</div>
+              <div class="sm-num" style="color:var(--gold);margin-top:4px">${ff(c.pp[Math.min(Math.ceil(s.dfMonths/12),15)])}/yr</div>
             </div>
           </div>
           <div class="prg"><div class="prg-f" style="width:${c.pNow}%"></div></div>
-          <div style="font-size:11px;color:var(--muted)">${Math.round(c.pNow)}% of target now · ${Math.round(c.pPost)}% post debt-free</div>`
-        :html`
-          <div style="margin-top:8px">
-            <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--muted)">$0<span style="font-size:11px;font-weight:400">/yr</span></div>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5">No investment properties yet. Target is ${ff(s.target)}/yr — add one under <b style="color:var(--text)">Properties</b> to project rental income towards it.</div>
-          </div>`}
-      </div>
-
-      <div class="g2" style="margin-bottom:10px">
-        ${[['🏁 RETIREMENT',[c.rYr,c.rMo,c.rDy],'Age '+s.retAge+' target'],
-           ['💳 DEBT FREE',[c.dYr,c.dMo,c.dDy],c.dd.toLocaleDateString('en-AU',{month:'short',year:'numeric'})]].map(function(it){
-          return html`<div class="card-sm">
-            <div class="lbl">${it[0]}</div>
-            <div class="cdg">${[['YRS',it[1][0]],['MO',it[1][1]],['DY',it[1][2]]].map(function(u){return html`<div class="cdu"><div class="cdn">${u[1]}</div><div class="cdl">${u[0]}</div></div>`;})}</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:5px;text-align:center">${it[2]}</div>
-          </div>`;
-        })}
-      </div>
-
-      <div class="g3">
-        ${[['🏘️',s.props.length+(s.props.length===1?' IP':' IPs'),'Properties'],['💰','$'+totalRent+'/wk','Gross Rent/wk'],['🔐',fm(c.sa),'Super @'+s.superAge]].map(function(r){
-          return html`<div class="card-sm" style="text-align:center;padding:12px 6px">
-            <div style="font-size:20px">${r[0]}</div>
-            <div style="font-family:var(--mono);font-size:12px;color:var(--gold);margin-top:4px;font-weight:700">${r[1]}</div>
-            <div class="lbl" style="font-size:9px;margin-top:2px">${r[2]}</div>
-          </div>`;
-        })}
-      </div>
-
-      ${hasIP && html`<div class="sec">Rental Breakdown FY26 (est. ${s.expRatio}% expenses)</div>`}
-      ${hasIP && html`<div class="card">
-        ${s.props.map(function(p,i){
-          var gr=p.rent*52,exp=Math.round(gr*s.expRatio/100),int=Math.round(p.loan*s.loanRate/100),net=gr-exp-int;
-          return html`<div class="fb" style="padding:7px 0;border-bottom:1px solid var(--border)">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:3px;height:32px;background:${PC[i%PC.length]};border-radius:2px;flex-shrink:0"></div>
-              <div>
-                <div style="font-size:13px;font-weight:700">${p.name}</div>
-                <div style="font-size:10px;color:var(--muted)">$${p.rent}/wk · exp ${ff(exp)} · int ${ff(int)}</div>
-              </div>
-            </div>
-            <div style="text-align:right">
-              <div class="sm-num" style="color:var(--green)">${ff(net)}</div>
-              <div style="font-size:10px;color:var(--muted)">${(net/gr*100).toFixed(0)}% margin</div>
-            </div>
-          </div>`;
-        })}
-        <div class="fb" style="padding-top:10px">
-          <div style="font-size:12px;font-weight:700;color:var(--muted)">Total Net Rental</div>
-          <div style="font-family:var(--mono);font-size:15px;color:var(--green);font-weight:700">${ff(c.nr)}/yr</div>
+          <div style="font-size:13px;color:var(--muted)">${Math.round(c.pNow)}% of target now · ${Math.round(c.pPost)}% once debt-free</div>
         </div>
-      </div>`}
+
+        <div class="sec">Rental breakdown · ${s.expRatio}% expenses</div>
+        <div class="card">
+          ${s.props.map(function(x,i){
+            var gr=x.rent*52,exp=Math.round(gr*s.expRatio/100),int=Math.round(x.loan*s.loanRate/100),net=gr-exp-int;
+            return html`<div class="fb" style="padding:9px 0;border-bottom:1px solid var(--border)">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                <div style="width:3px;height:34px;background:${PC[i%PC.length]};border-radius:2px;flex-shrink:0"></div>
+                <div style="min-width:0">
+                  <div style="font-size:15px;font-weight:700">${x.name}</div>
+                  <div style="font-size:12px;color:var(--muted)">$${x.rent}/wk · exp ${fm(exp)} · int ${fm(int)}</div>
+                </div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div class="sm-num" style="color:${cc(net)}">${ff(net)}</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">${gr?(net/gr*100).toFixed(0):0}% margin</div>
+              </div>
+            </div>`;
+          })}
+          <div class="fb" style="padding-top:12px">
+            <div style="font-size:14px;font-weight:700;color:var(--muted)">Total net rental</div>
+            <div style="font-family:var(--mono);font-size:16px;color:var(--green);font-weight:700">${ff(c.nr)}/yr</div>
+          </div>
+        </div>`
+      : html`
+        <button class="card" style="width:100%;text-align:left;cursor:pointer;color:inherit;font-family:inherit;display:flex;align-items:center;justify-content:space-between;gap:12px" onClick=${function(){p.go('properties');}}>
+          <div>
+            <div class="lbl">Passive income</div>
+            <div style="font-size:14px;color:var(--muted);margin-top:6px;line-height:1.45">Add an investment property to track rent towards your ${fm(s.target)}/yr target.</div>
+          </div>
+          <span style="color:var(--gold);font-size:22px">›</span>
+        </button>`}
+
+      <div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0 0">
+        ${s.demo?'Sample figures · nothing is uploaded':s.updatedAt?'Your figures last edited '+ago(s.updatedAt):'Stored on this device only'}
+      </div>
     </div>`;
 }
 
@@ -513,7 +776,8 @@ function TabPortfolio(p) {
   var allYrs=useMemo(function(){
     if(!s.props.length)return [];
     var m=Math.min.apply(null,s.props.map(function(x){return x.yr;}));
-    return Array.from({length:2026-m+1},function(_,i){return m+i;});
+    var M=Math.max.apply(null,s.props.map(function(x){var l=x.snaps[x.snaps.length-1];return l?l.year:x.yr;}).concat([CUR_YR]));
+    return Array.from({length:M-m+1},function(_,i){return m+i;});
   },[s.props]);
   var yf = met==='value'||met==='equity'
     ?function(v){return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+(v/1e3).toFixed(0)+'k';}
@@ -524,7 +788,7 @@ function TabPortfolio(p) {
         data:allYrs.map(function(yr){var sn=prop.snaps.find(function(x){return x.year===yr;});if(!sn)return null;return met==='value'?sn.value:met==='yield'?sn.grossY:met==='equity'?sn.equity:sn.netY;}),
         borderColor:PC[i%PC.length],backgroundColor:PC[i%PC.length]+'15',fill:false,tension:.4,pointRadius:2,pointHoverRadius:5,borderWidth:2,spanGaps:true};
     });
-  },[met]);
+  },[met,s.props,allYrs]);
   var tot=useMemo(function(){
     var tv=s.props.reduce(function(a,x){return a+x.val;},0);
     var te=s.props.reduce(function(a,x){var sn=x.snaps[x.snaps.length-1]||{};return a+(sn.equity||x.val-x.loan);},0);
@@ -543,8 +807,8 @@ function TabPortfolio(p) {
       <div class="page-title">Portfolio</div>
       <div class="card" style="text-align:center;padding:34px 20px">
         <div style="font-size:32px;line-height:1;margin-bottom:10px">◎</div>
-        <div style="font-weight:800;font-size:15px">Nothing to compare yet</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55">
+        <div style="font-weight:800;font-size:16px">Nothing to compare yet</div>
+        <div style="font-size:14px;color:var(--muted);margin-top:8px;line-height:1.55">
           This tab charts your investment properties against each other — value, yield and equity over time.
           Add one on the <b style="color:var(--text)">Properties</b> tab and it appears here.
         </div>
@@ -557,14 +821,14 @@ function TabPortfolio(p) {
       <div class="card">
         <div class="g4">
           ${[['Value',fm(tot.tv),'var(--gold)'],['Equity',fm(tot.te),'var(--green)'],['Rent/wk','$'+tot.tr,'var(--blue)'],['Avg Yield',tot.ay.toFixed(2)+'%','var(--purple)']].map(function(r){
-            return html`<div class="sb" style="text-align:center;padding:2px"><div class="lbl" style="font-size:9px">${r[0]}</div><div style="font-family:var(--mono);font-size:12px;color:${r[2]};font-weight:700;margin-top:4px">${r[1]}</div></div>`;
+            return html`<div class="sb" style="text-align:center;padding:2px"><div class="lbl" style="font-size:11px">${r[0]}</div><div style="font-family:var(--mono);font-size:14px;color:${r[2]};font-weight:700;margin-top:4px">${r[1]}</div></div>`;
           })}
         </div>
       </div>
 
       <div class="card">
         <div class="fb" style="margin-bottom:10px">
-          <div style="font-weight:800;font-size:14px">All Properties</div>
+          <div style="font-weight:800;font-size:16px">All Properties</div>
           <div style="display:flex;gap:4px">
             ${[['value','Value'],['yield','Gross%'],['equity','Equity'],['netY','Net%']].map(function(m){
               return html`<button class="mbtn" style="background:${met===m[0]?'var(--gold)':'var(--bg3)'};color:${met===m[0]?'var(--bg)':'var(--muted)'}" onClick=${function(){setMet(m[0]);}}>${m[1]}</button>`;
@@ -573,31 +837,31 @@ function TabPortfolio(p) {
         </div>
         <${MultiLine} datasets=${ds} labels=${allYrs} yFmt=${yf} />
         <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px">
-          ${s.props.map(function(x,i){return html`<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:14px;height:2px;border-radius:1px;background:${PC[i%PC.length]}"></div>${x.name}</div>`;})}
+          ${s.props.map(function(x,i){return html`<div style="display:flex;align-items:center;gap:5px;font-size:13px"><div style="width:14px;height:2px;border-radius:1px;background:${PC[i%PC.length]}"></div>${x.name}</div>`;})}
         </div>
       </div>
 
-      <div class="sec">Yield Leaderboard <span style="color:var(--red);text-transform:none;letter-spacing:0;font-size:10px">— 6% benchmark</span></div>
+      <div class="sec">Yield Leaderboard <span style="color:var(--red);text-transform:none;letter-spacing:0;font-size:12px">— 6% benchmark</span></div>
       ${ldr.map(function(p,i){
         var bw=Math.min(100,p.grossY/8*100),bn=6/8*100;
         return html`<div class="card" style="margin-bottom:8px">
           <div class="fb">
             <div style="display:flex;align-items:center;gap:10px">
-              <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${p.col};width:26px;line-height:1">${i+1}</div>
-              <div><div style="font-weight:800;font-size:14px">${p.name}</div><div style="font-size:10px;color:var(--muted)">${p.suburb}${p.trust?' · Trust':''}</div></div>
+              <div style="font-family:var(--mono);font-size:26px;font-weight:800;color:${p.col};width:26px;line-height:1">${i+1}</div>
+              <div><div style="font-weight:800;font-size:16px">${p.name}</div><div style="font-size:12px;color:var(--muted)">${p.suburb}${p.trust?' · Trust':''}</div></div>
             </div>
-            <div style="text-align:right"><div style="font-family:var(--mono);font-size:17px;font-weight:700;color:${p.col}">${p.grossY.toFixed(2)}%</div><div style="font-size:10px;color:var(--muted)">gross yield</div></div>
+            <div style="text-align:right"><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:${p.col}">${p.grossY.toFixed(2)}%</div><div style="font-size:12px;color:var(--muted)">gross yield</div></div>
           </div>
           <div style="position:relative;margin:12px 0 18px">
             <div style="background:var(--bg3);border-radius:4px;height:7px;overflow:visible;position:relative">
               <div style="background:${p.col};width:${bw}%;height:100%;border-radius:4px;opacity:.9"></div>
               <div style="position:absolute;top:-5px;left:${bn}%;width:2px;height:17px;background:var(--red);border-radius:1px;z-index:2"></div>
             </div>
-            <div style="position:absolute;top:14px;left:${bn}%;transform:translateX(-50%);font-size:9px;color:var(--red);font-weight:700">6%</div>
+            <div style="position:absolute;top:14px;left:${bn}%;transform:translateX(-50%);font-size:11px;color:var(--red);font-weight:700">6%</div>
           </div>
           <div class="g4">
             ${[['Net Yield',p.netY.toFixed(2)+'%','var(--green)'],['Cap Growth','+'+p.cg.toFixed(0)+'%','var(--gold)'],['Equity',fm(p.eq),'var(--text)'],['Cost',ff(p.cost),'var(--muted)']].map(function(r){
-              return html`<div class="sb"><div class="lbl" style="font-size:9px">${r[0]}</div><div style="font-family:var(--mono);font-size:11px;color:${r[2]};font-weight:700;margin-top:2px">${r[1]}</div></div>`;
+              return html`<div class="sb"><div class="lbl" style="font-size:11px">${r[0]}</div><div style="font-family:var(--mono);font-size:13px;color:${r[2]};font-weight:700;margin-top:2px">${r[1]}</div></div>`;
             })}
           </div>
         </div>`;
@@ -607,19 +871,20 @@ function TabPortfolio(p) {
 
 // ─── PROPERTY DRILL-DOWN ─────────────────────────────────────
 function Drilldown(p) {
-  var prop=p.prop,col=p.col,onBack=p.onBack,onSave=p.onSave,onRemove=p.onRemove;
+  var prop=p.prop,col=p.col,onBack=p.onBack,onSave=p.onSave,onRemove=p.onRemove,rate=p.rate>0?p.rate:6.09;
   var ct=useState('value');var setCt=ct[1];ct=ct[0];
   var sf=useState(false);var setSf=sf[1];sf=sf[0];
   var snaps=prop.snaps,lbls=snaps.map(function(s){return String(s.year);});
   var yoy=snaps.map(function(s,i){return i===0?0:+((s.value-snaps[i-1].value)/snaps[i-1].value*100).toFixed(2);});
   var lat=snaps[snaps.length-1]||{};
-  var fm_=useState({year:2026,value:prop.val,wRent:prop.rent,loan:prop.loan,exp:Math.round(prop.rent*52*EXP)});
+  var fm_=useState({year:CUR_YR,value:prop.val,wRent:prop.rent,loan:prop.loan,exp:Math.round(prop.rent*52*EXP)});
   var setFm=fm_[1];fm_=fm_[0];
   var vf=function(v){return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+(v/1e3).toFixed(0)+'k';};
   var pf=function(v){return(v||0).toFixed(2)+'%';};
   function submit(){
     var yr=+fm_.year,v=+fm_.value,wr=+fm_.wRent,ln=+fm_.loan,ex=+fm_.exp;
-    var aR=wr*52,int=Math.round(ln*0.061);
+    if(!(yr>=1900&&yr<=2100)||!(v>0)||!(wr>=0)||!(ln>=0)||!(ex>=0)){alert('Enter a valid year, a value above zero, and no negative amounts.');return;}
+    var aR=wr*52,int=Math.round(ln*rate/100);
     onSave(prop.id,{year:yr,value:v,wRent:wr,aRent:aR,loan:ln,exp:ex,intC:int,
       grossY:+(aR/v*100).toFixed(3),netY:+((aR-ex-int)/v*100).toFixed(3),equity:v-ln});
     setSf(false);
@@ -628,30 +893,30 @@ function Drilldown(p) {
     <div class="page">
       <button class="back" onClick=${onBack}>‹ Back to Properties</button>
       <div class="fb" style="margin-bottom:14px">
-        <div><div style="font-size:20px;font-weight:800;color:${col}">${prop.name}</div><div style="font-size:11px;color:var(--muted)">${prop.addr} · ${prop.suburb} · Bought ${prop.yr}</div></div>
-        <button onClick=${function(){setSf(!sf);}} style="background:${sf?'var(--bg3)':'var(--gold)'};color:${sf?'var(--muted)':'var(--bg)'};border:none;border-radius:8px;padding:7px 12px;font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer">${sf?'✕ Cancel':'+ Update'}</button>
+        <div><div style="font-size:22px;font-weight:800;color:${col}">${prop.name}</div><div style="font-size:13px;color:var(--muted)">${prop.addr} · ${prop.suburb} · Bought ${prop.yr}</div></div>
+        <button onClick=${function(){setSf(!sf);}} style="background:${sf?'var(--bg3)':'var(--gold)'};color:${sf?'var(--muted)':'var(--bg)'};border:none;border-radius:8px;padding:7px 12px;font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer">${sf?'✕ Cancel':'+ Update'}</button>
       </div>
 
       <div class="card">
         <div class="g4">
           ${[['Value',ff(lat.value||prop.val),'var(--gold)'],['Yield',(lat.grossY||0).toFixed(2)+'%','var(--blue)'],['Net Y',(lat.netY||0).toFixed(2)+'%','var(--purple)'],['Equity',fm(lat.equity||prop.val-prop.loan),'var(--green)']].map(function(r){
-            return html`<div class="sb" style="text-align:center"><div class="lbl" style="font-size:9px">${r[0]}</div><div style="font-family:var(--mono);font-size:12px;color:${r[2]};font-weight:700;margin-top:3px">${r[1]}</div></div>`;
+            return html`<div class="sb" style="text-align:center"><div class="lbl" style="font-size:11px">${r[0]}</div><div style="font-family:var(--mono);font-size:14px;color:${r[2]};font-weight:700;margin-top:3px">${r[1]}</div></div>`;
           })}
         </div>
         <div class="div" style="margin:10px 0 8px"></div>
         <div class="g3">
           ${[['Purchase',ff(prop.cost),'var(--muted)'],['Capital Gain','+'+ff(prop.val-prop.cost),'var(--green)'],['Rent','$'+prop.rent+'/wk','var(--text)']].map(function(r){
-            return html`<div class="sb"><div class="lbl" style="font-size:9px">${r[0]}</div><div style="font-family:var(--mono);font-size:12px;color:${r[2]};margin-top:2px">${r[1]}</div></div>`;
+            return html`<div class="sb"><div class="lbl" style="font-size:11px">${r[0]}</div><div style="font-family:var(--mono);font-size:14px;color:${r[2]};margin-top:2px">${r[1]}</div></div>`;
           })}
         </div>
       </div>
 
       ${sf && html`
         <div class="snap">
-          <div style="font-weight:800;font-size:13px;color:var(--gold);margin-bottom:10px">Log Annual Snapshot</div>
+          <div style="font-weight:800;font-size:15px;color:var(--gold);margin-bottom:10px">Log Annual Snapshot</div>
           ${[['Year','year','1'],['Property Value','value','1000'],['Weekly Rent','wRent','5'],['Loan Balance','loan','1000'],['Annual Expenses','exp','500']].map(function(r){
             return html`<div class="snap-row">
-              <div style="font-size:12px">${r[0]}</div>
+              <div style="font-size:14px">${r[0]}</div>
               <input class="snap-in" type="number" step=${r[2]} value=${fm_[r[1]]}
                 onInput=${function(e){var k=r[1];setFm(function(f){var n=Object.assign({},f);n[k]=e.target.value;return n;});}} />
             </div>`;
@@ -670,8 +935,8 @@ function Drilldown(p) {
         ${ct==='yield' && html`
           <${DualLine} d1=${snaps.map(function(s){return s.grossY;})} d2=${snaps.map(function(s){return s.netY;})} l1="Gross" l2="Net" labels=${lbls} c1=${col} c2="var(--green)" yFmt=${pf} />
           <div style="display:flex;gap:14px;margin-top:8px">
-            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><div style="width:14px;height:2px;background:${col};border-radius:1px"></div>Gross yield</div>
-            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><div style="width:14px;height:2px;background:var(--green);border-radius:1px"></div>Net yield</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--muted)"><div style="width:14px;height:2px;background:${col};border-radius:1px"></div>Gross yield</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--muted)"><div style="width:14px;height:2px;background:var(--green);border-radius:1px"></div>Net yield</div>
           </div>`}
         ${ct==='equity' && html`<${LineChart} data=${snaps.map(function(s){return s.equity;})} labels=${lbls} color="var(--green)" yFmt=${vf} />`}
         ${ct==='growth' && html`<${BarChart} data=${yoy} labels=${lbls} yFmt=${pf} />`}
@@ -713,9 +978,7 @@ function TabProperties(p) {
   var sp=sel?s.props.find(function(x){return x.id===sel;}):null;
   var si=sel?s.props.findIndex(function(x){return x.id===sel;}):-1;
 
-  // Anything the user saves is their own data, never a sample — stamp demo:false
-  // or the loader would discard it as a stale sample snapshot.
-  function persist(next){ var n=Object.assign({},next,{demo:false}); localStorage.setItem(SKEY,JSON.stringify(n)); setS(n); }
+  function persist(next){ setS(saveState(next)); }
 
   function addProp(){
     var yr=parseInt(nf.yr,10), cost=parseFloat(nf.cost), val=parseFloat(nf.val),
@@ -742,15 +1005,17 @@ function TabProperties(p) {
       if(x.id!==pid)return x;
       var f=x.snaps.filter(function(z){return z.year!==sn.year;});
       var ss=f.concat([sn]).sort(function(a,b){return a.year-b.year;});
-      return Object.assign({},x,{snaps:ss,val:sn.year===2026?sn.value:x.val,rent:sn.year===2026?sn.wRent:x.rent,loan:sn.year===2026?sn.loan:x.loan});
+      // Only the newest snapshot moves the property's headline figures
+      var latest=sn.year>=ss[ss.length-1].year;
+      return Object.assign({},x,{snaps:ss,val:latest?sn.value:x.val,rent:latest?sn.wRent:x.rent,loan:latest?sn.loan:x.loan});
     })});
     persist(next);
   }
-  if(sp) return html`<${Drilldown} prop=${sp} col=${PC[si%PC.length]} onBack=${function(){setSel(null);}} onSave=${onSave} onRemove=${function(){removeProp(sp.id);}} />`;
+  if(sp) return html`<${Drilldown} prop=${sp} col=${PC[si%PC.length]} onBack=${function(){setSel(null);}} rate=${s.loanRate} onSave=${onSave} onRemove=${function(){removeProp(sp.id);}} />`;
 
   function NF(r){
     return html`<div class="snap-row">
-      <div style="font-size:12px">${r[0]}</div>
+      <div style="font-size:14px">${r[0]}</div>
       <input class="snap-in" type=${r[2]||'number'} step=${r[3]||'1'} placeholder=${r[4]||''} value=${nf[r[1]]}
         onInput=${function(e){var k=r[1],v=e.target.value;setNf(function(f){var n=Object.assign({},f);n[k]=v;return n;});}} />
     </div>`;
@@ -761,14 +1026,14 @@ function TabProperties(p) {
       <div class="fb" style="margin-bottom:4px">
         <div class="page-title" style="margin-bottom:0">Properties</div>
         <button onClick=${function(){setAddOpen(!addOpen);}}
-          style="background:${addOpen?'var(--bg3)':'var(--gold)'};color:${addOpen?'var(--muted)':'var(--bg)'};border:none;border-radius:8px;padding:7px 12px;font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer">
+          style="background:${addOpen?'var(--bg3)':'var(--gold)'};color:${addOpen?'var(--muted)':'var(--bg)'};border:none;border-radius:8px;padding:7px 12px;font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer">
           ${addOpen?'✕ Cancel':'+ Add Property'}
         </button>
       </div>
 
       ${addOpen && html`
         <div class="snap" style="margin-top:10px">
-          <div style="font-weight:800;font-size:13px;color:var(--gold);margin-bottom:10px">Add Investment Property</div>
+          <div style="font-weight:800;font-size:15px;color:var(--gold);margin-bottom:10px">Add Investment Property</div>
           ${[['Name','name','text','1','e.g. Rental 1'],
              ['Suburb','suburb','text','1','optional'],
              ['Address','addr','text','1','optional — stays on this device'],
@@ -778,12 +1043,12 @@ function TabProperties(p) {
              ['Weekly Rent','rent','number','5',''],
              ['Loan Balance','loan','number','1000','0 if paid off']].map(NF)}
           <div class="snap-row">
-            <div style="font-size:12px">Held in a trust</div>
+            <div style="font-size:14px">Held in a trust</div>
             <input type="checkbox" checked=${nf.trust} style="width:18px;height:18px;accent-color:var(--gold)"
               onChange=${function(e){var v=e.target.checked;setNf(function(f){return Object.assign({},f,{trust:v});});}} />
           </div>
           <button class="snap-btn" onClick=${addProp}>✓ Add Property</button>
-          <div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center">
+          <div style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center">
             History is estimated from the purchase year to today. Refine it with annual snapshots afterwards.
           </div>
         </div>`}
@@ -793,8 +1058,8 @@ function TabProperties(p) {
         : (!addOpen && html`
           <div class="card" style="text-align:center;padding:34px 20px;margin-top:10px">
             <div style="font-size:32px;line-height:1;margin-bottom:10px">⬡</div>
-            <div style="font-weight:800;font-size:15px">No investment properties</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55">
+            <div style="font-weight:800;font-size:16px">No investment properties</div>
+            <div style="font-size:14px;color:var(--muted);margin-top:8px;line-height:1.55">
               Tap <b style="color:var(--text)">+ Add Property</b> to track one. You'll get value and yield charts,
               equity build-up and a year-by-year history — and your passive income projections start filling in.
             </div>
@@ -806,21 +1071,21 @@ function TabProperties(p) {
           <div class="pacc" style="background:${PC[i%PC.length]}"></div>
           <div style="flex:1;min-width:0">
             <div class="fb">
-              <div style="font-weight:800;font-size:14px">${x.name}${x.trust?html` <span class="tag tag-purple" style="font-size:8px">Trust</span>`:''}</div>
-              <div style="font-family:var(--mono);font-size:14px;color:${PC[i%PC.length]};font-weight:700">${gy}%</div>
+              <div style="font-weight:800;font-size:16px">${x.name}${x.trust?html` <span class="tag tag-purple" style="font-size:10px">Trust</span>`:''}</div>
+              <div style="font-family:var(--mono);font-size:16px;color:${PC[i%PC.length]};font-weight:700">${gy}%</div>
             </div>
-            <div style="font-size:11px;color:var(--muted);margin-top:1px">${x.addr} · $${x.rent}/wk</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:1px">${x.addr} · $${x.rent}/wk</div>
             <div class="fb" style="margin-top:6px">
-              <div style="font-size:11px">${ff(x.val)} <span style="color:var(--green)">+${ff(gain)}</span></div>
-              <div style="font-size:11px;color:var(--muted)">Equity ${fm(x.val-x.loan)}</div>
+              <div style="font-size:13px">${ff(x.val)} <span style="color:var(--green)">+${ff(gain)}</span></div>
+              <div style="font-size:13px;color:var(--muted)">Equity ${fm(x.val-x.loan)}</div>
             </div>
           </div>
-          <div style="color:var(--muted);font-size:18px;flex-shrink:0">›</div>
+          <div style="color:var(--muted);font-size:20px;flex-shrink:0">›</div>
         </div>`;
       })}
       <div class="sec">Primary Residence</div>
       <div class="card" style="border-left:3px solid var(--blue);border-radius:0 14px 14px 0;padding-left:16px">
-        <div class="fb"><div><div style="font-weight:800;font-size:14px">${s.pprName||'Primary Residence'}</div>${s.pprAddr?html`<div style="font-size:11px;color:var(--muted)">${s.pprAddr}</div>`:null}</div><span class="tag tag-blue">PPR</span></div>
+        <div class="fb"><div><div style="font-weight:800;font-size:16px">${s.pprName||'Primary Residence'}</div>${s.pprAddr?html`<div style="font-size:13px;color:var(--muted)">${s.pprAddr}</div>`:null}</div><span class="tag tag-blue">PPR</span></div>
         <div class="g2" style="margin-top:10px">
           ${[['Est. Value',ff(s.pprVal),'var(--gold)'],
              ['Bought '+s.pprBoughtYr,ff(s.pprBoughtCost),'var(--muted)'],
@@ -830,294 +1095,389 @@ function TabProperties(p) {
             return html`<div class="sb"><div class="lbl">${r[0]}</div><div class="sm-num" style="color:${r[2]};margin-top:2px">${r[1]}</div></div>`;
           })}
         </div>
-        ${s.pprNote?html`<div style="font-size:10px;color:var(--muted);margin-top:8px;background:var(--bg3);padding:6px 8px;border-radius:6px">${s.pprNote}</div>`:null}
+        ${s.pprNote?html`<div style="font-size:12px;color:var(--muted);margin-top:8px;background:var(--bg3);padding:6px 8px;border-radius:6px">${s.pprNote}</div>`:null}
       </div>
     </div>`;
 }
 
 // ─── TAB: INVEST ─────────────────────────────────────────────
-var CGIDS={BNB:'binancecoin',BTC:'bitcoin',ETH:'ethereum',SOL:'solana',XRP:'ripple',DOT:'polkadot',AVAX:'avalanche-2',DOGE:'dogecoin'};
+function fmtPx(p,cur){
+  var d=p>=100?2:p>=1?2:p>=0.01?4:6;
+  return (cur==='USD'?'US$':'$')+p.toLocaleString('en-AU',{minimumFractionDigits:Math.min(d,2),maximumFractionDigits:d});
+}
+function fmtQty(q){ return (+q||0).toLocaleString('en-AU',{maximumFractionDigits:6}); }
+
+function HoldEditor(p){
+  var k=p.kind;
+  var _r=useState(function(){
+    return (p.list||[]).map(function(h){
+      return {orig:h,label:h.m?(h.n||''):(h.t||''),qty:String(h.qty==null?'':h.qty),px:String(+basePx(k.id,h).toFixed(6)||'')};
+    });
+  }); var rows=_r[0],setRows=_r[1];
+  function upd(i,f,v){ setRows(function(r){ var n=r.slice(); n[i]=Object.assign({},n[i]); n[i][f]=v; return n; }); }
+  function save(){
+    var out=[];
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i], label=r.label.trim(), qty=parseFloat(r.qty), px=parseFloat(r.px)||0, o=r.orig||{};
+      if(!label&&!(qty>0)) continue;
+      if(!label){ alert('Row '+(i+1)+' needs a ticker.'); return; }
+      if(!(qty>=0)){ alert(label+': enter how many units you hold.'); return; }
+      var h;
+      if(o.m&&label===o.n) h=Object.assign({},o,{qty:qty,px:px});
+      else {
+        var t=label.toUpperCase().replace(/\s+/g,'');
+        h={t:k.id==='asx'?t.replace(/\.AX$/,'')+'.AX':t, n:(o.t&&o.t.toUpperCase()===t)?o.n:(k.id==='asx'?t.replace(/\.AX$/,''):t), qty:qty, px:px};
+        if(o.trust) h.trust=true;
+      }
+      if(k.id==='us') h.u=qty*px; else h.v=qty*px;
+      out.push(h);
+    }
+    p.onSave(out);
+  }
+  return html`<div>
+    <div class="h-grid" style="margin-bottom:4px">
+      ${['Ticker','Units','Price ('+k.cur+')',''].map(function(t){return html`<div class="lbl" style="font-size:11px">${t}</div>`;})}
+    </div>
+    ${rows.map(function(r,i){
+      return html`<div class="h-grid" key=${i}>
+        <input class="h-in" style="text-transform:uppercase" placeholder=${k.ph} value=${r.label} autoCapitalize="characters" onInput=${function(e){upd(i,'label',e.target.value);}} />
+        <input class="h-in" type="number" inputMode="decimal" step="any" placeholder="0" value=${r.qty} onInput=${function(e){upd(i,'qty',e.target.value);}} />
+        <input class="h-in" type="number" inputMode="decimal" step="any" placeholder="auto" value=${r.px} onInput=${function(e){upd(i,'px',e.target.value);}} />
+        <button class="h-x" aria-label="Remove" onClick=${function(){setRows(function(x){return x.filter(function(_,j){return j!==i;});});}}>✕</button>
+      </div>`;
+    })}
+    <button class="btn-n" style="margin-top:6px;padding:11px" onClick=${function(){setRows(rows.concat([{orig:null,label:'',qty:'',px:''}]));}}>+ Add holding</button>
+    <div style="font-size:12px;color:var(--muted);margin:10px 0 2px;line-height:1.5">
+      Live prices replace the price you enter whenever a quote is available${k.id==='crypto'?' (major coins only)':''}. ${k.id==='asx'?'ASX codes without ".AX" are fine. ':''}
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-n" onClick=${p.onCancel}>Cancel</button>
+      <button class="btn-g" style="background:var(--gold);color:var(--bg)" onClick=${save}>Save</button>
+    </div>
+  </div>`;
+}
 
 function TabInvest(p) {
-  var s=p.s,c=p.c;
-  // Holdings come from on-device state; demo lists are the fallback for a fresh install
-  var CRYPTO = s.holdCrypto || DEMO_CRYPTO;
-  var US     = s.holdUS     || DEMO_US;
-  var ASX    = s.holdASX    || DEMO_ASX;
-  var _lp=useState({});var livePx=_lp[0],setLivePx=_lp[1];
-  var _ls=useState('loading');var liveStatus=_ls[0],setLiveStatus=_ls[1];
-  var _lt=useState(null);var lastUp=_lt[0],setLastUp=_lt[1];
+  var s=p.s,c=p.c,mk=p.mk,it=c.it;
+  var _e=useState(null);var editing=_e[0],setEditing=_e[1];
+  var fx=fxOf(mk,s);
 
-  function fetchLive(){
-    var cgIds=CRYPTO.map(function(coin){return CGIDS[coin.t];}).filter(Boolean).join(',');
-    var newPx={};var anyLive=false;
-    var cReq=fetch('https://api.coingecko.com/api/v3/simple/price?ids='+cgIds+'&vs_currencies=aud&include_24hr_change=true')
-      .then(function(r){return r.json();})
-      .then(function(d){
-        CRYPTO.forEach(function(coin){var id=CGIDS[coin.t];if(d[id]){newPx[coin.t]={price:d[id].aud,chg:d[id].aud_24h_change||0,live:true};anyLive=true;}});
-      }).catch(function(){});
-    var tickers=US.map(function(st){return{t:st.t,isUS:true};}).concat(ASX.map(function(st){return{t:st.t,isUS:false};}));
-    var sReqs=tickers.map(function(tk){
-      return fetch('https://query1.finance.yahoo.com/v8/finance/chart/'+tk.t+'?interval=1d&range=1d&includePrePost=false')
-        .then(function(r){return r.json();})
-        .then(function(d){
-          var m=((d.chart||{}).result||[{}])[0].meta||{};
-          if(m.regularMarketPrice){
-            var chg=m.previousClose?(m.regularMarketPrice-m.previousClose)/m.previousClose*100:0;
-            newPx[tk.t]={price:m.regularMarketPrice,chg:chg,live:true,usd:tk.isUS};anyLive=true;
-          }
-        }).catch(function(){});
-    });
-    Promise.all([cReq].concat(sReqs)).then(function(){
-      setLivePx(newPx);
-      setLiveStatus(anyLive?'live':'offline');
-      if(anyLive)setLastUp(new Date());
-    });
-  }
-  useEffect(function(){fetchLive();var iv=setInterval(fetchLive,300000);return function(){clearInterval(iv);};},[]);
+  function saveList(key,list){ var o={}; o[key]=list; p.setS(saveState(Object.assign({},s,o))); setEditing(null); }
 
-  function liveVal(ticker,qty,audusd){
-    var lp=livePx[ticker];
-    if(!lp||!lp.live)return null;
-    return lp.usd?(lp.price*qty/audusd):(lp.price*qty);
-  }
-  function liveRow(ticker){return livePx[ticker]&&livePx[ticker].live?livePx[ticker]:null;}
-
-  var statusLabel=liveStatus==='loading'?'Fetching live prices…':liveStatus==='live'?('Live · '+lastUp.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})):'Offline · showing last known';
-  var statusCol=liveStatus==='live'?'var(--green)':liveStatus==='loading'?'var(--muted)':'var(--gold)';
-
-  var usTotal=US.reduce(function(a,st){var v=liveVal(st.t,st.qty,s.audusd);return a+(v!==null?v:st.u/s.audusd);},0);
-  var asxTotal=ASX.reduce(function(a,st){var v=liveVal(st.t,st.qty,s.audusd);return a+(v!==null?v:st.v);},0);
-  var cryptoTotal=CRYPTO.reduce(function(a,coin){var v=liveVal(coin.t,coin.qty,s.audusd);return a+(v!==null?v:coin.v);},0);
+  var segs=KINDS.map(function(k){return {l:k.label,v:it[k.id],c:k.col};}).filter(function(x){return x.v>0;});
 
   return html`
     <div class="page">
-      <div class="fb" style="margin-bottom:14px">
-        <div class="page-title" style="margin-bottom:0">Investments</div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <div style="width:6px;height:6px;border-radius:50%;background:${statusCol};${liveStatus==='live'?'animation:pulse 2s ease infinite':''}"></div>
-          <span style="font-size:10px;color:${statusCol};font-weight:600">${statusLabel}</span>
-        </div>
+      <div class="fb" style="margin-bottom:16px">
+        <div class="page-title" style="margin-bottom:0">Invest</div>
+        ${it.count>0 && html`<${LivePill} mkt=${p.mkt} status=${p.status} onRefresh=${p.refresh} />`}
       </div>
 
       <div class="card">
-        <div class="lbl" style="margin-bottom:10px">TOTAL PORTFOLIO BREAKDOWN</div>
-        <${DonutChart} segs=${[{l:'Superannuation',v:s.superBal,c:'#60a5fa'},{l:'US Stocks',v:usTotal,c:'#f0b429'},{l:'ASX Shares',v:asxTotal,c:'#34d399'},{l:'Crypto',v:cryptoTotal,c:'#a78bfa'}]} />
-        <div class="div" style="margin:10px 0"></div>
-        <div class="fb"><div class="lbl">TOTAL (EX-PROPERTY)</div><div style="font-family:var(--mono);font-size:15px;color:var(--gold);font-weight:700">${ff(s.superBal+usTotal+asxTotal+cryptoTotal)}</div></div>
+        <div class="lbl">Shares & crypto</div>
+        <div class="big-num" style="margin-top:8px">${ff(it.total)}</div>
+        ${it.live>0 && Math.abs(it.day)>=1 && html`<div style="font-size:14px;font-weight:600;margin-top:8px;color:${cc(it.day)}">${it.day>=0?'▲':'▼'} ${ff(Math.abs(it.day))} today</div>`}
+        ${segs.length>0 && html`<${DonutChart} segs=${segs} />`}
+        <div class="div"></div>
+        <div class="fb"><div style="font-size:14px;color:var(--muted)">Including super</div><div class="sm-num" style="color:var(--gold);font-weight:700">${ff(s.superBal+it.total)}</div></div>
       </div>
 
       <div class="sec">Superannuation</div>
-      <div class="card" style="background:rgba(96,165,250,.04);border-color:rgba(96,165,250,.25)">
+      <div class="card">
         <div class="fb">
-          <div><div style="font-weight:800;font-size:15px;color:var(--blue)">Super Fund</div><div style="font-size:11px;color:var(--muted);margin-top:2px">SG ${s.salary?(s.superContrib/s.salary*100).toFixed(1):'12.0'}% · $${s.salary.toLocaleString()} salary</div></div>
-          <div style="text-align:right"><div class="sm-num" style="color:var(--blue)">${ff(s.superBal)}</div><div style="font-size:10px;color:var(--muted)">+${ff(s.superContrib)}/yr</div></div>
+          <div><div style="font-weight:800;font-size:17px;color:var(--blue)">Super fund</div><div style="font-size:13px;color:var(--muted);margin-top:3px">${s.salary?(s.superContrib/s.salary*100).toFixed(1):'12.0'}% contributions · ${fm(s.salary)} salary</div></div>
+          <div style="text-align:right"><div class="sm-num" style="color:var(--blue);font-weight:700">${ff(s.superBal)}</div><div style="font-size:12px;color:var(--muted);margin-top:4px">+${ff(s.superContrib)}/yr</div></div>
         </div>
         <div class="div"></div>
         <div class="g3">
-          ${[['Projected @'+s.superAge,ff(c.sa),'var(--gold)'],['Growth Rate',s.superGrow+'% p.a.','var(--text)'],['Years to access',Math.max(0,s.superAge-s.age)+' yrs','var(--muted)']].map(function(r){
-            return html`<div class="sb"><div class="lbl" style="font-size:9px">${r[0]}</div><div style="font-family:var(--mono);font-size:12px;color:${r[2]};font-weight:700;margin-top:2px">${r[1]}</div></div>`;
+          ${[['At '+s.superAge,fm(c.sa),'var(--gold)'],['Growth',s.superGrow+'%','var(--text)'],['Access in',c.yS+' yrs','var(--text)']].map(function(r){
+            return html`<div class="sb"><div class="lbl" style="font-size:11px">${r[0]}</div><div style="font-family:var(--mono);font-size:15px;color:${r[2]};font-weight:700">${r[1]}</div></div>`;
           })}
         </div>
       </div>
 
-      <div class="sec">US Stocks <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0">AUD@${s.audusd}</span></div>
-      <div class="card">
-        ${US.map(function(st){
-          var lr=liveRow(st.t);
-          var val=lr?(lr.price*st.qty/s.audusd):(st.u/s.audusd);
-          var chg=lr?lr.chg:st.g;
-          var sub=lr?('US$'+lr.price.toFixed(2)+' · '+st.qty+' shares'):(st.qty+' shares');
-          return html`<div class="inv-row">
-            <div style="display:flex;align-items:center;gap:8px;flex:1"><span class="tkr">${st.t}</span><div><div style="font-size:13px;font-weight:600">${st.n}</div><div style="font-size:10px;color:var(--muted)">${sub}</div></div></div>
-            <div style="text-align:right;flex-shrink:0"><div class="sm-num">${ff(val)}</div><div style="font-size:10px;color:${cc(chg)}">${pc(chg)}${lr?' 24h':''}</div></div>
-          </div>`;
-        })}
-        <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border)"><span class="sm-num" style="color:var(--gold)">AUD ${ff(usTotal)}</span></div>
-      </div>
-
-      <div class="sec">ASX Holdings</div>
-      <div class="card">
-        ${ASX.map(function(st){
-          var lr=liveRow(st.t);
-          var val=lr?(lr.price*st.qty):st.v;
-          var chg=lr?lr.chg:0;
-          var sub=lr?('$'+lr.price.toFixed(2)+' · '+st.qty+' shares'+(st.trust?' · Trust':'')):(st.qty+'@$'+st.px+(st.trust?' · Trust':''));
-          return html`<div class="inv-row">
-            <div style="display:flex;align-items:center;gap:8px;flex:1"><span class="tkr">${st.t}</span><div><div style="font-size:13px;font-weight:600">${st.n}</div><div style="font-size:10px;color:var(--muted)">${sub}</div></div></div>
-            <div style="text-align:right"><div class="sm-num">${ff(val)}</div><div style="font-size:10px;color:${cc(chg)}">${pc(chg)}${lr?' 24h':''}</div></div>
-          </div>`;
-        })}
-        <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border)"><span class="sm-num" style="color:var(--gold)">Total ${ff(asxTotal)}</span></div>
-      </div>
-
-      <div class="sec">Crypto</div>
-      <div class="card">
-        ${CRYPTO.map(function(coin){
-          var lr=liveRow(coin.t);
-          var val=lr?(lr.price*coin.qty):coin.v;
-          var chg=lr?lr.chg:coin.g;
-          var sub=lr?(coin.qty+' · $'+lr.price.toLocaleString('en-AU',{maximumFractionDigits:2})+' ea'):(coin.qty+' tokens');
-          return html`<div class="inv-row">
-            <div style="display:flex;align-items:center;gap:8px;flex:1"><span class="tkr">${coin.t}</span><div><div style="font-size:13px;font-weight:600">${coin.n}</div><div style="font-size:10px;color:var(--muted)">${sub}</div></div></div>
-            <div style="text-align:right"><div class="sm-num">${ff(val)}</div><div style="font-size:10px;color:${cc(chg)}">${pc(chg)}${lr?' 24h':''}</div></div>
-          </div>`;
-        })}
-        <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border)"><span class="sm-num" style="color:var(--gold)">Total ${ff(cryptoTotal)}</span></div>
-      </div>
-    </div>`;
-}
-
-// ─── TAB: FORECAST + SETTINGS ────────────────────────────────
-function TabForecast(p) {
-  var s=p.s,setS=p.setS;
-  var _hp=useState(function(){return !!getPin();});var hasPin=_hp[0],setHasPin=_hp[1];
-  var _pd=useState('');var pinDraft=_pd[0],setPinDraft=_pd[1];
-  var c=useMemo(function(){return calc(s);},[s]);
-  var yr=new Date().getFullYear();
-  var l20=Array.from({length:21},function(_,i){return"'"+String(yr+i).slice(2);});
-  var l15=Array.from({length:16},function(_,i){return"'"+String(yr+i).slice(2);});
-  function save(n){var v=Object.assign({},n,{demo:false});localStorage.setItem(SKEY,JSON.stringify(v));setS(v);}
-  function sv(k,v){save(Object.assign({},s,{[k]:parseFloat(v)||0,demo:false}));}
-  function svt(k,v){save(Object.assign({},s,{[k]:v,demo:false}));}
-  function F(fp){return html`<div class="si"><div style="font-size:12px">${fp.label}</div><input class="si-in" type="number" step=${fp.step||'1'} value=${s[fp.k]} onInput=${function(e){sv(fp.k,e.target.value);}} /></div>`;}
-  function T(fp){return html`<div class="si"><div style="font-size:12px">${fp.label}</div><input class="si-in" type="text" placeholder=${fp.ph||''} value=${s[fp.k]||''} onInput=${function(e){svt(fp.k,e.target.value);}} /></div>`;}
-  return html`
-    <div class="page">
-      <div class="page-title">Forecast</div>
-
-      <div class="card" style="background:linear-gradient(135deg,var(--gold-bg),rgba(52,211,153,.04));border-color:rgba(240,180,41,.3)">
-        <div class="lbl" style="color:var(--gold)">RETIREMENT SNAPSHOT · AGE ${s.retAge}</div>
-        <div style="display:flex;align-items:center;gap:16px;margin-top:10px">
-          <div><div style="font-family:var(--mono);font-size:34px;font-weight:800;color:var(--gold);line-height:1">${c.yR}<span style="font-size:14px">yr</span></div><div style="font-size:11px;color:var(--muted)">from today</div></div>
-          <div style="flex:1">
-            <div class="g2" style="gap:8px">
-              ${[['Net Worth',ff(c.retNW),'var(--gold)'],['Passive/yr',ff(c.retP),'var(--green)'],['Super @'+s.superAge,ff(c.sa),'var(--blue)'],['Monthly',ff(Math.round(c.retP/12))+'/mo','var(--text)']].map(function(r){
-                return html`<div><div class="lbl" style="font-size:9px">${r[0]}</div><div style="font-family:var(--mono);font-size:12px;color:${r[2]};font-weight:700;margin-top:1px">${r[1]}</div></div>`;
-              })}
-            </div>
+      ${KINDS.map(function(k){
+        var list=s[k.key]||[];
+        var isEd=editing===k.id;
+        return html`<div key=${k.id}>
+          <div class="fb" style="margin:22px 0 10px">
+            <div class="sec" style="margin:0">${k.label}${k.id==='us'?html` <span style="text-transform:none;letter-spacing:0;font-weight:500">· A$1 = US$${fx.toFixed(3)}</span>`:''}</div>
+            ${!isEd && html`<button class="chip" onClick=${function(){setEditing(k.id);}}>Edit</button>`}
           </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="fb"><div><div style="font-weight:800">Net Worth Trajectory</div><div style="font-size:11px;color:var(--muted)">20yr · property ${s.propGrow}% / invest ${s.invGrow}%</div></div><div class="sm-num" style="color:var(--gold)">${fm(c.nwp[20])}</div></div>
-        <${LineChart} data=${c.nwp} labels=${l20} color="#f0b429" yFmt=${function(v){return'$'+(v/1e6).toFixed(1)+'M';}} />
-      </div>
-
-      <div class="card">
-        <div class="fb"><div><div style="font-weight:800">Passive Income Growth</div><div style="font-size:11px;color:var(--muted)">Rent +${s.rentGrow}%/yr · exp ${s.expRatio}%</div></div><div class="sm-num" style="color:var(--green)">${fm(c.pp[15])}/yr</div></div>
-        <${LineChart} data=${c.pp} labels=${l15} color="#34d399" yFmt=${function(v){return'$'+(v/1e3).toFixed(0)+'k';}} />
-        <div style="margin-top:8px;padding:8px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--muted)">📌 Debt-free ${c.dd.toLocaleDateString('en-AU',{month:'short',year:'numeric'})} → +${ff(s.totalLoan*s.loanRate/100)}/yr &nbsp;·&nbsp; Target ${ff(s.target)}/yr</div>
-      </div>
-
-      <div class="card">
-        <div class="fb"><div><div style="font-weight:800">Superannuation Growth</div><div style="font-size:11px;color:var(--muted)">${s.superGrow}% p.a. · access age ${s.superAge}</div></div><div class="sm-num" style="color:var(--blue)">${fm(c.sa)} @${s.superAge}</div></div>
-        <${LineChart} data=${c.sp} labels=${l20} color="#60a5fa" yFmt=${function(v){return'$'+(v/1e3).toFixed(0)+'k';}} />
-      </div>
-
-      <div class="sec">Freedom Roadmap</div>
-      ${[
-        {ph:'1',col:'var(--red)',   title:'Debt Free',      tgt:c.dd.toLocaleDateString('en-AU',{month:'short',year:'numeric'}), desc:'Pay off '+ff(s.totalLoan)+' · unlock +'+ff(s.totalLoan*s.loanRate/100)+'/yr'},
-        {ph:'2',col:'var(--gold)',  title:'Buffer Built',   tgt:'Post debt-free', desc:'Maintenance reserve → psychological freedom from surprise bills'},
-        {ph:'3',col:'var(--green)', title:'Freedom Income', tgt:'Age '+s.retAge,  desc:ff(s.target)+'/yr passive · optional work on your terms'},
-        {ph:'4',col:'var(--blue)',  title:'Super Access',   tgt:'Age '+s.superAge,desc:'Unlock '+fm(c.sa)+' super · major income boost'},
-      ].map(function(x){
-        return html`<div class="ph" style="border-left-color:${x.col}">
-          <div class="fb">
-            <div><div style="font-size:10px;color:${x.col};font-weight:800;letter-spacing:.08em">PHASE ${x.ph}</div><div style="font-weight:800;font-size:14px;margin-top:2px">${x.title}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${x.desc}</div></div>
-            <div style="font-family:var(--mono);font-size:12px;color:${x.col};white-space:nowrap;margin-left:12px">${x.tgt}</div>
+          <div class="card">
+            ${isEd
+              ? html`<${HoldEditor} kind=${k} list=${list} onCancel=${function(){setEditing(null);}} onSave=${function(l){saveList(k.key,l);}} />`
+              : list.length===0
+                ? html`<div style="text-align:center;padding:10px 0;font-size:14px;color:var(--muted)">No holdings · tap <b style="color:var(--text)">Edit</b> to add</div>`
+                : html`
+                  ${list.map(function(h,i){
+                    var q=quote(k.id,h,mk), px=q?q.p:basePx(k.id,h), val=holdVal(k.id,h,mk,s);
+                    var sub=h.m?'Entered value':fmtQty(h.qty)+' × '+fmtPx(px,k.cur)+(h.trust?' · Trust':'');
+                    return html`<div class="inv-row" key=${i}>
+                      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                        <span class="tkr">${h.m?'—':String(h.t).replace(/\.AX$/,'')}</span>
+                        <div style="min-width:0"><div style="font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.n||h.t}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${sub}</div></div>
+                      </div>
+                      <div style="text-align:right;flex-shrink:0">
+                        <div class="sm-num" style="font-weight:700">${ff(val)}</div>
+                        <div style="font-size:12px;margin-top:3px;color:${q?cc(q.c):'var(--muted)'}">${q?pc(q.c)+' today':h.m?'':'last price'}</div>
+                      </div>
+                    </div>`;
+                  })}
+                  <div class="fb" style="padding-top:12px;border-top:1px solid var(--border)"><span style="font-size:14px;color:var(--muted)">Total${k.id==='us'?' (AUD)':''}</span><span class="sm-num" style="color:var(--gold);font-weight:700">${ff(it[k.id])}</span></div>`}
           </div>
         </div>`;
       })}
 
-      <div class="sec" style="margin-top:26px">⚙ Settings & Assumptions</div>
-      <div class="card">
-        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px">YOUR DETAILS</div>
-        <${T} label="Dashboard Name" k="ownerName" ph="My Dashboard" />
-        <${T} label="Residence Label" k="pprName" ph="Primary Residence" />
-        <${T} label="Residence Address (optional)" k="pprAddr" ph="Leave blank to hide" />
-        <${T} label="Residence Note (optional)" k="pprNote" ph="Leave blank to hide" />
-        <div style="font-size:10px;color:var(--muted);margin-top:6px">Stored on this device only — never uploaded, never in the app's source code.</div>
+      <div style="font-size:12px;color:var(--muted);text-align:center;line-height:1.5;padding:10px 4px 0">
+        Prices are looked up by ticker only — your holdings and balances never leave this device.
       </div>
-      <div class="card">
-        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px">PERSONAL</div>
-        <${F} label="Current Age" k="age" />
-        <${F} label="Target Retirement Age" k="retAge" />
-        <${F} label="Super Access Age" k="superAge" />
-        <${F} label="Annual Salary" k="salary" />
-        <${F} label="Passive Income Target ($/yr)" k="target" />
-        <${F} label="Months to Debt Free" k="dfMonths" />
+    </div>`;
+}
+
+// ─── Settings fields ─────────────────────────────────────────
+// Defined once at module level: a component declared inside a render
+// function is a new type on every render, so React would remount the input
+// and drop focus after each keystroke.
+function SetNum(p){
+  return html`<div class="si"><div><div class="si-l">${p.label}</div>${p.hint&&html`<div class="si-h">${p.hint}</div>`}</div>
+    <${NumIn} value=${p.s[p.k]} step=${p.step} onChange=${function(v){p.set(p.k,v);}} /></div>`;
+}
+function SetText(p){
+  return html`<div class="si"><div class="si-l">${p.label}</div>
+    <input class="si-in" style="font-family:var(--sans);text-align:left;width:auto;flex:1;max-width:62%" type="text" placeholder=${p.ph||''} value=${p.s[p.k]||''}
+      onInput=${function(e){p.set(p.k,e.target.value);}} /></div>`;
+}
+function SetMonth(p){
+  var _d=useState(p.s[p.k]||''); var d=_d[0],setD=_d[1];
+  useEffect(function(){ setD(p.s[p.k]||''); },[p.s[p.k]]);
+  return html`<div class="si"><div><div class="si-l">${p.label}</div>${p.hint&&html`<div class="si-h">${p.hint}</div>`}</div>
+    <input class="si-in" style="font-family:var(--sans)" type="month" placeholder="YYYY-MM" value=${d}
+      onInput=${function(e){ var v=e.target.value; setD(v); if(ymParse(v)) p.set(p.k,ymParse(v)&&ym(ymParse(v))); }} /></div>`;
+}
+
+// ─── Home loan repayment calculator ──────────────────────────
+var LKEY='findash_loan';
+var FREQ={weekly:{ppy:52,suf:'/wk',lbl:'Weekly'},fortnightly:{ppy:26,suf:'/fn',lbl:'Fortnightly'},monthly:{ppy:12,suf:'/mo',lbl:'Monthly'}};
+// Walk the schedule period by period; returns periods taken, total interest
+// and the balance at each year end (for the chart).
+function amortize(P,pr,ppy,pay,maxN){
+  var bal=P,tot=0,k=0,yearly=[Math.round(P)];
+  while(bal>0.005&&k<maxN){ var i=bal*pr; tot+=i; bal=Math.max(0,bal+i-pay); k++; if(k%ppy===0) yearly.push(Math.round(bal)); }
+  if(k%ppy!==0) yearly.push(Math.round(bal));
+  return {periods:k,interest:tot,yearly:yearly};
+}
+function loanCalc(l){
+  var P=Math.max(0,+l.amt||0), rate=Math.max(0,+l.rate||0), extra=Math.max(0,+l.extra||0);
+  var yrs=Math.min(40,Math.max(1,Math.round(+l.years)||1)), f=FREQ[l.freq]||FREQ.monthly;
+  var n=yrs*f.ppy, pr=rate/100/f.ppy;
+  var pay=P>0?(pr>0?P*pr/(1-Math.pow(1+pr,-n)):P/n):0;
+  var base=amortize(P,pr,f.ppy,pay,n);
+  var ex=extra>0&&P>0?amortize(P,pr,f.ppy,pay+extra,n):null;
+  return {P:P,f:f,pay:pay,base:base,ex:ex,extra:extra};
+}
+function yrmo(m){ var y=Math.floor(m/12),r=m%12; return (y?y+' yr ':'')+(r||!y?r+' mo':''); }
+
+function LoanCalc(p){
+  var s=p.s;
+  function mine(){ return {amt:s.pprLoan||s.totalLoan||500000, rate:s.pprRate||s.loanRate||6, years:Math.max(1,Math.ceil(s.dfMonths/12))||30}; }
+  var _l=useState(function(){
+    var d=null; try{ d=JSON.parse(localStorage.getItem(LKEY)); }catch(e){}
+    return Object.assign({freq:'monthly',extra:0},mine(),d||{});
+  }); var l=_l[0],setL=_l[1];
+  function up(o){ setL(function(prev){ var n=Object.assign({},prev,o); try{localStorage.setItem(LKEY,JSON.stringify(n));}catch(e){} return n; }); }
+  var r=useMemo(function(){ return loanCalc(l); },[l]);
+  var bMo=Math.round(r.base.periods/r.f.ppy*12), eMo=r.ex?Math.round(r.ex.periods/r.f.ppy*12):0;
+  var dOpt={month:'short',year:'numeric'};
+  var payoff=ymParse(ymAdd(r.ex?eMo:bMo));
+  var lbls=r.base.yearly.map(function(_,i){ return "'"+String(CUR_YR+i).slice(2); });
+  var exY=r.ex?r.base.yearly.map(function(_,i){ return r.ex.yearly[i]!=null?r.ex.yearly[i]:0; }):null;
+  var vf=function(v){ return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+Math.round(v/1e3)+'k'; };
+  var isMine=+l.amt===+(s.pprLoan||s.totalLoan);
+  return html`<div>
+    <div class="card">
+      <div class="fb" style="margin-bottom:12px">
+        <div style="font-weight:800;font-size:17px">Repayments</div>
+        <button class="chip" onClick=${function(){up(mine());}}>Use my loan</button>
       </div>
-      <div class="card">
-        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px">PROPERTY</div>
-        <${F} label="PPR Value" k="pprVal" />
-        <${F} label="PPR Purchase Year" k="pprBoughtYr" />
-        <${F} label="PPR Purchase Price" k="pprBoughtCost" />
-        <${F} label="PPR Renovations Spend" k="pprReno" />
-        <${F} label="Home Loan Balance" k="pprLoan" />
-        <${F} label="Investment Loans Total" k="totalLoan" />
-        <${F} label="Loan Rate (%)" k="loanRate" step="0.01" />
-        <${F} label="Expense Ratio (% gross rent)" k="expRatio" step="0.5" />
-        <${F} label="Annual Rent Growth (%)" k="rentGrow" step="0.1" />
-        <${F} label="Annual Property Growth (%)" k="propGrow" step="0.1" />
+      <div class="pills">${Object.keys(FREQ).map(function(k){ return html`<button class=${'pill'+(l.freq===k?' on':'')} onClick=${function(){up({freq:k});}}>${FREQ[k].lbl}</button>`; })}</div>
+      ${[['Loan amount','amt'],['Interest rate (%)','rate'],['Term (years)','years'],['Extra '+r.f.lbl.toLowerCase(),'extra']].map(function(row){
+        return html`<div class="si" key=${row[1]}><div class="si-l">${row[0]}</div><${NumIn} value=${l[row[1]]} onChange=${function(v){var o={};o[row[1]]=v;up(o);}} /></div>`;
+      })}
+    </div>
+
+    <div class="card" style="background:linear-gradient(135deg,var(--gold-bg),rgba(52,211,153,.04)),var(--bg2);border-color:rgba(240,180,41,.3)">
+      <div class="lbl" style="color:var(--gold)">${r.f.lbl} repayment</div>
+      <div class="big-num" style="margin-top:8px">${ff(r.pay+r.extra)}<span style="font-size:16px;color:var(--muted);font-weight:400">${r.f.suf}</span></div>
+      ${r.extra>0 && html`<div style="font-size:13px;color:var(--muted);margin-top:6px">${ff(r.pay)} minimum + ${ff(r.extra)} extra</div>`}
+      <div class="div"></div>
+      <div class="g3">
+        ${[['Interest',fm(r.ex?r.ex.interest:r.base.interest),'var(--red)'],['Total paid',fm(r.P+(r.ex?r.ex.interest:r.base.interest)),'var(--text)'],['Paid off',payoff.toLocaleDateString('en-AU',dOpt),'var(--gold)']].map(function(x){
+          return html`<div class="sb"><div class="lbl" style="font-size:11px">${x[0]}</div><div style="font-family:var(--mono);font-size:14px;color:${x[2]};font-weight:700">${x[1]}</div></div>`;
+        })}
       </div>
-      <div class="card">
-        <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:8px">SUPER & INVESTMENTS</div>
-        <${F} label="Super Balance" k="superBal" />
-        <${F} label="Annual Contributions" k="superContrib" />
-        <${F} label="Super Growth Rate (%)" k="superGrow" step="0.1" />
-        <${F} label="US Stocks (USD total)" k="usUSD" />
-        <${F} label="AUD/USD Rate" k="audusd" step="0.001" />
-        <${F} label="ASX Personal" k="asxP" />
-        <${F} label="ASX Trust" k="asxT" />
-        <${F} label="Crypto Total (AUD)" k="crypto" />
-        <${F} label="Investment Growth (%)" k="invGrow" step="0.1" />
+      ${r.ex && html`<div style="margin-top:14px;padding:12px;border-radius:12px;background:var(--green-bg);border:1px solid rgba(52,211,153,.3);font-size:14px;line-height:1.5">
+        Paying ${ff(r.extra)}${r.f.suf} extra saves <b style="color:var(--green)">${ff(r.base.interest-r.ex.interest)}</b> in interest and finishes <b style="color:var(--green)">${yrmo(bMo-eMo)}</b> sooner.
+      </div>`}
+      ${isMine && html`<button class="btn-n" onClick=${function(){ p.set('dfDate',ym(payoff)); alert('Debt-free date set to '+payoff.toLocaleDateString('en-AU',dOpt)+'.'); }}>Set ${payoff.toLocaleDateString('en-AU',dOpt)} as my debt-free date</button>`}
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800;font-size:16px">Balance over time</div>
+      ${r.ex
+        ? html`<${DualLine} d1=${r.base.yearly} d2=${exY} l1="Minimum" l2="With extra" labels=${lbls} c1="#f0b429" c2="#34d399" yFmt=${vf} />
+          <div style="display:flex;gap:16px;margin-top:10px;font-size:13px;color:var(--muted)">
+            <span><span style="color:#f0b429">━</span> Minimum</span><span><span style="color:#34d399">┅</span> With extra</span>
+          </div>`
+        : html`<${LineChart} data=${r.base.yearly} labels=${lbls} color="#f0b429" yFmt=${vf} />`}
+    </div>
+    <div style="font-size:12px;color:var(--muted);text-align:center;padding:4px 0">Estimate only — ignores fees, offset accounts and rate changes.</div>
+  </div>`;
+}
+
+// ─── TAB: PLAN (Forecast · Loan · Settings) ──────────────────
+function TabPlan(p) {
+  var s=p.s,setS=p.setS,c=p.c,seg=p.seg,setSeg=p.setSeg;
+  var _hp=useState(function(){return !!getPin();});var hasPin=_hp[0],setHasPin=_hp[1];
+  var _pd=useState('');var pinDraft=_pd[0],setPinDraft=_pd[1];
+  var l20=Array.from({length:21},function(_,i){return"'"+String(CUR_YR+i).slice(2);});
+  var l15=Array.from({length:16},function(_,i){return"'"+String(CUR_YR+i).slice(2);});
+  function save(n){ setS(saveState(n)); }
+  function set(k,v){ var o={}; o[k]=v; save(Object.assign({},s,o)); }
+  var hasIP=s.props.length>0;
+  var dOpt={month:'short',year:'numeric'};
+  var fp={s:s,set:set};
+  return html`
+    <div class="page">
+      <div class="page-title">Plan</div>
+      <div class="pills">
+        ${[['fc','Forecast'],['loan','Home loan'],['set','Settings']].map(function(t){
+          return html`<button class=${'pill'+(seg===t[0]?' on':'')} onClick=${function(){setSeg(t[0]);window.scrollTo(0,0);}}>${t[1]}</button>`;
+        })}
       </div>
 
-      <div class="sec" style="margin-top:26px">🔒 Privacy & Backup</div>
-      <div class="card">
-        <div style="font-size:12px;color:var(--muted);line-height:1.55">
-          The app itself is public — anyone with the link gets it loaded with sample numbers.
-          Your figures are stored only in this browser on this device and are never uploaded anywhere.
+      ${seg==='loan' && html`<${LoanCalc} s=${s} set=${set} />`}
+
+      ${seg==='fc' && html`<div>
+        <div class="card" style="background:linear-gradient(135deg,var(--gold-bg),rgba(52,211,153,.04)),var(--bg2);border-color:rgba(240,180,41,.3)">
+          <div class="lbl" style="color:var(--gold)">At retirement · age ${s.retAge}</div>
+          <div class="big-num" style="margin-top:8px">${fm(c.retNW)}</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:6px">Projected net worth in ${c.yR} years (${c.rd.toLocaleDateString('en-AU',dOpt)})</div>
+          <div class="div"></div>
+          <div class="g3">
+            ${[['Super @'+s.superAge,fm(c.sa),'var(--blue)'],hasIP?['Rent / yr',fm(Math.max(0,c.retP)),'var(--green)']:['Shares',fm(c.inv*Math.pow(1+s.invGrow/100,c.yR)),'var(--green)'],['Target / yr',fm(s.target),'var(--text)']].map(function(r){
+              return html`<div class="sb"><div class="lbl" style="font-size:11px">${r[0]}</div><div style="font-family:var(--mono);font-size:15px;color:${r[2]};font-weight:700">${r[1]}</div></div>`;
+            })}
+          </div>
         </div>
 
-        <div class="div"></div>
-        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:2px">BACKUP</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Export a file to move your data to another device, or to restore it if you clear your browser.</div>
-        <button class="btn-n" onClick=${function(){exportData(s);}}>⤓  Export my data</button>
-        <label class="btn-n" style="cursor:pointer">
-          ⤒  Import a backup file
-          <input type="file" accept="application/json,.json" style="display:none" onChange=${function(e){
-            var f=e.target.files&&e.target.files[0]; e.target.value='';
-            if(f) importData(f,function(next){ save(next); alert('Data imported.'); });
-          }} />
-        </label>
+        <div class="card">
+          <div class="fb"><div><div style="font-weight:800;font-size:16px">Net worth</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Next 20 years</div></div><div class="sm-num" style="color:var(--gold);font-weight:700">${fm(c.nwp[20])}</div></div>
+          <${LineChart} data=${c.nwp} labels=${l20} color="#f0b429" yFmt=${function(v){return'$'+(v/1e6).toFixed(1)+'M';}} />
+        </div>
 
-        <div class="div"></div>
-        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:2px">DEVICE LOCK</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">
+        <div class="card">
+          <div class="fb"><div><div style="font-weight:800;font-size:16px">Super</div><div style="font-size:13px;color:var(--muted);margin-top:2px">${s.superGrow}% a year · access at ${s.superAge}</div></div><div class="sm-num" style="color:var(--blue);font-weight:700">${fm(c.sa)}</div></div>
+          <${LineChart} data=${c.sp} labels=${l20} color="#60a5fa" yFmt=${function(v){return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+Math.round(v/1e3)+'k';}} />
+        </div>
+
+        ${hasIP && html`<div class="card">
+          <div class="fb"><div><div style="font-weight:800;font-size:16px">Rental income</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Rent +${s.rentGrow}%/yr · ${s.expRatio}% expenses</div></div><div class="sm-num" style="color:var(--green);font-weight:700">${fm(c.pp[15])}/yr</div></div>
+          <${LineChart} data=${c.pp} labels=${l15} color="#34d399" yFmt=${function(v){return'$'+Math.round(v/1e3)+'k';}} />
+        </div>`}
+
+        <div class="sec">Milestones</div>
+        ${[
+          {col:'var(--red)',  title:'Debt free',   tgt:c.debt>0?c.dd.toLocaleDateString('en-AU',dOpt):'Done', desc:c.debt>0?'Clear '+fm(c.debt)+' of loans':'No loans outstanding'},
+          {col:'var(--gold)', title:'Retire',      tgt:'Age '+s.retAge, desc:'Target '+fm(s.target)+'/yr of income'},
+          {col:'var(--blue)', title:'Super access',tgt:'Age '+s.superAge, desc:'Projected balance '+fm(c.sa)},
+        ].map(function(x){
+          return html`<div class="ph" style="border-left-color:${x.col}">
+            <div class="fb" style="gap:12px">
+              <div><div style="font-weight:800;font-size:16px">${x.title}</div><div style="font-size:13px;color:var(--muted);margin-top:3px">${x.desc}</div></div>
+              <div style="font-family:var(--mono);font-size:14px;color:${x.col};white-space:nowrap;font-weight:700">${x.tgt}</div>
+            </div>
+          </div>`;
+        })}
+        <div style="font-size:12px;color:var(--muted);text-align:center;padding:10px 4px 0;line-height:1.5">
+          Projections use property ${s.propGrow}%, investments ${s.invGrow}% and super ${s.superGrow}% growth a year — change them in Settings.
+        </div>
+      </div>`}
+
+      ${seg==='set' && html`<div>
+        ${s.demo && html`<div class="demo-b"><span>Editing any figure turns the samples into your own data.</span></div>`}
+        <div class="card">
+          <div class="set-h" style="color:var(--gold)">YOU</div>
+          <${SetText} ...${fp} label="Dashboard name" k="ownerName" ph="My Dashboard" />
+          <${SetMonth} ...${fp} label="Born" hint=${'Age '+s.age} k="dob" />
+          <${SetNum} ...${fp} label="Retirement age" k="retAge" />
+          <${SetNum} ...${fp} label="Super access age" k="superAge" />
+          <${SetNum} ...${fp} label="Salary" k="salary" />
+          <${SetNum} ...${fp} label="Income target ($/yr)" k="target" />
+        </div>
+        <div class="card">
+          <div class="set-h" style="color:var(--gold)">HOME</div>
+          <${SetText} ...${fp} label="Label" k="pprName" ph="Primary Residence" />
+          <${SetText} ...${fp} label="Address" k="pprAddr" ph="Optional" />
+          <${SetNum} ...${fp} label="Current value" k="pprVal" />
+          <${SetNum} ...${fp} label="Year bought" k="pprBoughtYr" />
+          <${SetNum} ...${fp} label="Purchase price" k="pprBoughtCost" />
+          <${SetNum} ...${fp} label="Renovations" k="pprReno" />
+          <${SetNum} ...${fp} label="Home loan balance" k="pprLoan" />
+          <${SetNum} ...${fp} label="Home loan rate (%)" k="pprRate" step="0.01" />
+          <${SetMonth} ...${fp} label="Debt-free by" hint=${c.debt>0?s.dfMonths+' months away':'No loans'} k="dfDate" />
+        </div>
+        <div class="card">
+          <div class="set-h" style="color:var(--blue)">SUPER</div>
+          <${SetNum} ...${fp} label="Balance" k="superBal" />
+          <${SetNum} ...${fp} label="Contributions ($/yr)" k="superContrib" />
+          <${SetNum} ...${fp} label="Growth (%/yr)" k="superGrow" step="0.1" />
+        </div>
+        <div class="card">
+          <div class="set-h" style="color:var(--green)">INVESTMENTS</div>
+          <div class="note" style="margin-bottom:6px">Shares and crypto are edited as holdings on the <b style="color:var(--text)">Invest</b> tab.</div>
+          <${SetNum} ...${fp} label="Growth (%/yr)" k="invGrow" step="0.1" />
+          <${SetNum} ...${fp} label="AUD/USD fallback" hint="Used when the live rate is unavailable" k="audusd" step="0.001" />
+        </div>
+        <div class="card">
+          <div class="set-h" style="color:var(--purple)">INVESTMENT PROPERTY</div>
+          ${!hasIP && s.totalLoan>0 && html`<${SetNum} ...${fp} label="Investment loans" hint="Add properties to track loans individually" k="totalLoan" />`}
+          ${hasIP && html`<div class="note" style="padding:6px 0">Loans are taken from each property — update them on the <b style="color:var(--text)">Properties</b> tab.</div>`}
+          <${SetNum} ...${fp} label="Loan rate (%)" k="loanRate" step="0.01" />
+          <${SetNum} ...${fp} label="Expenses (% of rent)" k="expRatio" step="0.5" />
+          <${SetNum} ...${fp} label="Rent growth (%/yr)" k="rentGrow" step="0.1" />
+          <${SetNum} ...${fp} label="Property growth (%/yr)" k="propGrow" step="0.1" />
+        </div>
+
+        <div class="sec">Privacy & backup</div>
+        <div class="card">
+          <div class="note">Your figures are stored only in this browser on this device and are never uploaded. The app itself is public — anyone with the link gets sample numbers.</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-n" onClick=${function(){exportData(s);}}>⤓ Export</button>
+            <label class="btn-n" style="cursor:pointer">⤒ Import
+              <input type="file" accept="application/json,.json" style="display:none" onChange=${function(e){
+                var f=e.target.files&&e.target.files[0]; e.target.value='';
+                if(f) importData(f,function(next){ save(next); alert('Data imported.'); });
+              }} />
+            </label>
+          </div>
+          <div class="div"></div>
+          <div class="si-l" style="font-weight:700">Device PIN</div>
+          <div class="note" style="margin-top:4px">${hasPin?'A PIN is needed to open the dashboard on this device.':'A privacy screen for a shared phone. It is not encryption.'}</div>
           ${hasPin
-            ? 'A PIN is required to open the dashboard on this device.'
-            : 'Ask for a PIN before showing the dashboard on this device. This is a privacy screen for a shared or borrowed phone — it is not encryption, and it is not what keeps your data private online.'}
+            ? html`<button class="btn-n" onClick=${function(){ if(confirm('Remove the PIN? The dashboard will open without one.')){savePin(null);setHasPin(false);} }}>Remove PIN</button>`
+            : html`<div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+                <input class="si-in" style="flex:1;width:auto;text-align:left;letter-spacing:.2em" type="password" inputMode="numeric" placeholder="4–8 digits"
+                  value=${pinDraft} onInput=${function(e){setPinDraft(e.target.value.replace(/\D/g,'').slice(0,8));}} />
+                <button class="chip gold" style="padding:11px 18px" onClick=${function(){
+                  if(pinDraft.length<4){alert('Use at least 4 digits.');return;}
+                  savePin(pinDraft);setPinDraft('');setHasPin(true);
+                  alert('PIN set. You can clear it here, or reset the app if you forget it.');
+                }}>Set</button>
+              </div>`}
         </div>
-        ${hasPin
-          ? html`<button class="btn-n" onClick=${function(){
-              if(confirm('Remove the PIN? The dashboard will open without one.')){savePin(null);setHasPin(false);}
-            }}>Remove PIN</button>`
-          : html`<div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-              <input class="si-in" style="width:100%;text-align:left;letter-spacing:.2em" type="password" inputMode="numeric" placeholder="4–8 digit PIN"
-                value=${pinDraft} onInput=${function(e){setPinDraft(e.target.value.replace(/\D/g,'').slice(0,8));}} />
-              <button class="btn-g" style="width:auto;margin-top:0;padding:10px 16px" onClick=${function(){
-                if(pinDraft.length<4){alert('Use at least 4 digits.');return;}
-                savePin(pinDraft);setPinDraft('');setHasPin(true);
-                alert('PIN set. You can always clear it here, or reset the app if you forget it.');
-              }}>Set</button>
-            </div>`}
-      </div>
-
-      <button class="btn-d" onClick=${function(){if(confirm('Reset all data to the sample defaults? Export a backup first if you want to keep your figures.')){localStorage.removeItem(SKEY);setS(DEFAULT);}}}>↺  Reset All to Defaults</button>
-      <div style="font-size:11px;color:var(--muted);text-align:center;padding:14px 0 4px">All data stored locally · never leaves your device</div>
+        <button class="btn-d" onClick=${function(){if(confirm('Reset everything to the sample data? Export a backup first if you want to keep your figures.')){try{localStorage.removeItem(SKEY);localStorage.removeItem(LKEY);}catch(e){}setS(DEFAULT);}}}>Reset to sample data</button>
+      </div>`}
     </div>`;
 }
 
@@ -1127,7 +1487,7 @@ var TABS = [
   {id:'portfolio', icon:'◎',label:'Portfolio'},
   {id:'properties',icon:'⬡',label:'Properties'},
   {id:'invest',    icon:'◉',label:'Invest'},
-  {id:'forecast',  icon:'◬',label:'Forecast'},
+  {id:'plan',      icon:'◬',label:'Plan'},
 ];
 
 // First run: explains the app to whoever opens the link, and lets the owner
@@ -1137,9 +1497,9 @@ function Welcome(p) {
     <div class="gate">
       <div class="gate-w">
         <div style="font-size:36px;line-height:1;margin-bottom:12px;color:var(--gold)">◈</div>
-        <div style="font-size:22px;font-weight:800;letter-spacing:-.02em">Finance Dashboard</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.6;margin:10px 0 22px">
-          Track a property portfolio, shares, super and a retirement countdown.
+        <div style="font-size:24px;font-weight:800;letter-spacing:-.02em">Finance Dashboard</div>
+        <div style="font-size:15px;color:var(--muted);line-height:1.6;margin:10px 0 22px">
+          Track your home, property, shares, crypto and super — with live prices and a retirement countdown.
           Everything you enter stays in this browser on this device — nothing is uploaded, and there's no account to create.
         </div>
         <button class="btn-g" onClick=${p.onDemo}>Explore with sample data</button>
@@ -1150,8 +1510,8 @@ function Welcome(p) {
             if(f) importData(f,p.onImport);
           }} />
         </label>
-        <div style="font-size:11px;color:var(--muted);margin-top:16px;line-height:1.5">
-          The sample figures aren't anyone's real numbers. Replace them in <b style="color:var(--text)">Forecast → Settings</b>.
+        <div style="font-size:13px;color:var(--muted);margin-top:16px;line-height:1.5">
+          The sample figures aren't anyone's real numbers. Replace them in <b style="color:var(--text)">Plan → Settings</b>.
         </div>
       </div>
     </div>`;
@@ -1169,14 +1529,14 @@ function Lock(p) {
     <div class="gate">
       <div class="gate-w">
         <div style="font-size:30px;line-height:1;margin-bottom:14px">🔒</div>
-        <div style="font-weight:800;font-size:17px;margin-bottom:18px">Enter your PIN</div>
+        <div style="font-weight:800;font-size:18px;margin-bottom:18px">Enter your PIN</div>
         <form onSubmit=${submit} style="display:flex;flex-direction:column;align-items:center">
           <input class="gate-in" type="password" inputMode="numeric" autoFocus value=${v}
             onInput=${function(e){setV(e.target.value.replace(/\D/g,'').slice(0,8));setErr(false);}} />
-          <div style="height:18px;font-size:11px;color:var(--red);margin-top:8px">${err?'Incorrect PIN':''}</div>
+          <div style="height:18px;font-size:13px;color:var(--red);margin-top:8px">${err?'Incorrect PIN':''}</div>
           <button class="btn-g" style="width:190px" type="submit">Unlock</button>
         </form>
-        <button style="background:none;border:none;color:var(--muted);font-size:11px;font-family:var(--sans);margin-top:18px;cursor:pointer;text-decoration:underline"
+        <button style="background:none;border:none;color:var(--muted);font-size:13px;font-family:var(--sans);margin-top:18px;cursor:pointer;text-decoration:underline"
           onClick=${function(){
             if(confirm('Forgotten PIN?\n\nThe only way back in is to clear this device\'s data and start fresh. You can restore from a backup file afterwards.')){
               try{localStorage.removeItem(SKEY);localStorage.removeItem(PKEY);localStorage.removeItem(WKEY);}catch(e){}
@@ -1202,7 +1562,10 @@ function App() {
       // Merge over DEFAULT so saved data from older versions picks up new fields.
       // Sample-only figures are zeroed first so an existing install never
       // inherits them — an older save with no pprLoan has no home loan.
-      return Object.assign({},DEFAULT,{pprLoan:0,demo:false},d);
+      var up=migrate(d);
+      var out=Object.assign({},DEFAULT,{pprLoan:0,demo:false,updatedAt:0},up);
+      if(up!==d) try{localStorage.setItem(SKEY,JSON.stringify(out));}catch(e){}
+      return out;
     }catch(e){ return DEFAULT; }
   });
   var s=ss[0],setS=ss[1];
@@ -1216,20 +1579,53 @@ function App() {
   });
   var welcome=_wc[0],setWelcome=_wc[1];
   var ts=useState('overview');var tab=ts[0],setTab=ts[1];
+  var _sg=useState('fc');var seg=_sg[0],setSeg=_sg[1];
   var ips=useState(null);var ip=ips[0],setIp=ips[1];
   useEffect(function(){
     function h(e){e.preventDefault();setIp(e);}
     window.addEventListener('beforeinstallprompt',h);
     return function(){window.removeEventListener('beforeinstallprompt',h);};
   },[]);
-  var c=useMemo(function(){return calc(s);},[s]);
+
+  // ── Live prices, shared by every tab ──
+  var _mk=useState(loadMarket);var mkt=_mk[0],setMkt=_mk[1];
+  var _st=useState('idle');var status=_st[0],setStatus=_st[1];
+  var sRef=useRef(s); sRef.current=s;
+  var mRef=useRef(mkt); mRef.current=mkt;
+  var busy=useRef(false), lastTry=useRef(0);
+  function refresh(){
+    if(busy.current) return;
+    busy.current=true; lastTry.current=Date.now(); setStatus('loading');
+    refreshMarket(sRef.current,mRef.current).then(function(m){
+      busy.current=false; setMkt(m);
+      setStatus(!m.want?'none':m.got>=m.want?'live':m.got?'partial':'offline');
+    });
+  }
+  var tickers=KINDS.map(function(k){return (s[k.key]||[]).map(function(h){return pxKey(k.id,h);}).join(',');}).join('|');
+  useEffect(function(){ if(!locked&&!welcome) refresh(); },[tickers,locked,welcome]);
+  // Phones suspend timers in background tabs and installed apps, so also
+  // refresh the moment the app comes back into view.
+  var _tk=useState(0);var setTick=_tk[1];
+  useEffect(function(){
+    var iv=setInterval(function(){ setTick(function(x){return x+1;}); if(!document.hidden&&Date.now()-lastTry.current>300000) refresh(); },30000);
+    function vis(){ if(!document.hidden&&Date.now()-lastTry.current>60000) refresh(); }
+    document.addEventListener('visibilitychange',vis);
+    window.addEventListener('online',vis);
+    return function(){ clearInterval(iv); document.removeEventListener('visibilitychange',vis); window.removeEventListener('online',vis); };
+  },[]);
+
+  var sx=useMemo(function(){return derive(s);},[s,new Date().getDate()]);
+  var mk={px:mkt.px,fx:mkt.fx};
+  var c=useMemo(function(){return calc(sx,mk);},[sx,mkt]);
   function onI(){if(!ip)return;ip.prompt();ip.userChoice.then(function(){setIp(null);});}
+  function go(t,sg){ if(sg) setSeg(sg); setTab(t); window.scrollTo(0,0); }
+  var live={mkt:mkt,status:status,refresh:refresh};
   function renderTab(){
-    if(tab==='overview')   return html`<${TabOverview}    s=${s} c=${c} ip=${ip} onI=${onI} />`;
-    if(tab==='portfolio')  return html`<${TabPortfolio}   s=${s} />`;
-    if(tab==='properties') return html`<${TabProperties}  s=${s} setS=${setS} />`;
-    if(tab==='invest')     return html`<${TabInvest}      s=${s} c=${c} />`;
-    if(tab==='forecast')   return html`<${TabForecast}    s=${s} setS=${setS} />`;
+    if(tab==='overview')   return html`<${TabOverview}    s=${sx} c=${c} ip=${ip} onI=${onI} go=${go} ...${live} />`;
+    if(tab==='portfolio')  return html`<${TabPortfolio}   s=${sx} />`;
+    if(tab==='properties') return html`<${TabProperties}  s=${sx} setS=${setS} />`;
+    if(tab==='invest')     return html`<${TabInvest}      s=${sx} setS=${setS} c=${c} mk=${mk} ...${live} />`;
+    if(tab==='plan')       return html`<${TabPlan}        s=${sx} setS=${setS} c=${c} seg=${seg} setSeg=${setSeg} />`;
   }
   if(locked) return html`<${Lock} onOk=${function(){setLocked(false);}} />`;
   if(welcome) return html`<${Welcome}
@@ -1249,7 +1645,7 @@ function App() {
       <div key=${tab}>${renderTab()}</div>
       <nav class="nav">
         ${TABS.map(function(t){
-          return html`<button class=${'nav-btn'+(tab===t.id?' active':'')} onClick=${function(){setTab(t.id);}}>
+          return html`<button class=${'nav-btn'+(tab===t.id?' active':'')} onClick=${function(){go(t.id);}}>
             <span class="nav-icon">${t.icon}</span>
             <span class="nav-label">${t.label}</span>
           </button>`;
