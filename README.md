@@ -23,7 +23,7 @@ So the app is split in two:
 Practical consequences:
 
 - **Never paste real figures into `index.html`.** Enter them in the app instead
-  (**Forecast → Settings**), or import a backup file. Anything typed into the source
+  (**Plan → Settings**), or import a backup file. Anything typed into the source
   becomes public the moment it's pushed.
 - **Keep your backup file out of the repo.** Store it in your password manager,
   private cloud storage, or anywhere that isn't this project folder.
@@ -35,7 +35,7 @@ Practical consequences:
 
 Just send them the link. They get the app loaded with sample numbers and a first-run
 screen explaining what it is. Nothing of yours is in it. They can overwrite every
-figure with their own under **Forecast → Settings**, and their data stays on their
+figure with their own under **Plan → Settings**, and their data stays on their
 device the same way yours stays on yours.
 
 ### Where the sample numbers come from
@@ -57,7 +57,7 @@ finances.
 
 That works out to about $639,000 net worth. Growth assumptions (5% property, 7%
 investments, 3.5% rent) are conventional planning defaults, not forecasts — change
-them under **Forecast → Settings**.
+them under **Plan → Settings**.
 
 ### Adding investment properties
 
@@ -68,16 +68,17 @@ equity charts have something to draw immediately — refine it afterwards with a
 snapshots (**tap the property → + Update**).
 
 Once you have at least one, the Portfolio tab's comparison charts and yield
-leaderboard come to life, and the passive income projections on Overview and Forecast
+leaderboard come to life, and the passive income projections on Overview and Plan
 start filling in against your target.
 
 To remove one, open it and use **Remove This Property** at the bottom.
 
-Two separate loan fields sit under **Forecast → Settings → Property**:
+Loans are tracked in two places:
 
-- **Home Loan Balance** — your mortgage. Reduces net worth.
-- **Investment Loans Total** — debt against the rentals. Reduces net worth *and* is
-  charged as interest against rental income.
+- **Home loan balance** (**Plan → Settings → Home**) — your mortgage. Reduces net worth.
+- **Each property's own loan balance** (entered when you add it, updated with a
+  snapshot) — debt against the rentals. Reduces net worth *and* is charged as
+  interest against rental income.
 
 Keeping them apart is what stops a person with a mortgage and no rentals from showing
 negative "passive income".
@@ -87,25 +88,25 @@ negative "passive income".
 ## Getting your own data in
 
 **On your main device:** open the app, tap **Explore with sample data**, then go to
-**Forecast → Settings** and replace the figures with your own. Everything saves as
+**Plan → Settings** and replace the figures with your own. Everything saves as
 you type.
 
 **On a second device (or after clearing your browser):**
 
-1. On the device that has your data: **Forecast → Settings → Privacy & Backup → Export my data**
+1. On the device that has your data: **Plan → Settings → Privacy & backup → Export**
    This downloads `findash-backup-YYYY-MM-DD.json`.
 2. Move that file to the other device (AirDrop, private cloud folder, email to yourself).
 3. On the new device, open the app and tap **Import my backup file** on the welcome
-   screen — or **Forecast → Settings → Import a backup file** if you're past it.
+   screen — or **Plan → Settings → Import** if you're past it.
 
 Export again whenever your numbers change meaningfully. Clearing your browser data,
-or "Reset All to Defaults", wipes local storage — the backup file is the only copy.
+or "Reset to sample data", wipes local storage — the backup file is the only copy.
 
 ---
 
 ## Optional PIN lock
 
-**Forecast → Settings → Privacy & Backup → Device Lock**
+**Plan → Settings → Privacy & backup → Device PIN**
 
 Sets a 4–8 digit PIN that's required to open the dashboard on that device.
 
@@ -182,12 +183,12 @@ The app icon appears on your home screen. It runs full-screen with no browser ch
 5. Tap **Save Snapshot** — appears in charts and history table instantly
 
 ### Change assumptions
-- Open **Forecast** tab → scroll to bottom → **Settings & Assumptions**
+- Open **Plan** → **Settings**
 - Edit any figure — projections update live
 - All data saves automatically to your phone's local storage
 
 ### Reset to defaults
-- Forecast tab → Settings → **Reset All to Defaults**
+- **Plan → Settings → Reset to sample data**
 - This restores the sample data and erases yours — export a backup first
 
 ---
@@ -199,8 +200,31 @@ The app icon appears on your home screen. It runs full-screen with no browser ch
 | **Overview** | Net worth, passive income vs target, retirement & debt-free countdowns, rental breakdown |
 | **Portfolio** | Comparison chart (value/yield/equity), yield leaderboard vs 6% benchmark |
 | **Properties** | Per-property drill-down: 4 chart views, year-by-year table, snapshot logging |
-| **Invest** | Super, US stocks, ASX and crypto, with live prices where available |
-| **Forecast** | Net worth / passive income / super projections, freedom roadmap, settings |
+| **Invest** | Super, plus editable US share, ASX and crypto holdings valued at live prices |
+| **Plan** | **Forecast** (net worth / super / rental projections, milestones), **Home loan** repayment calculator, and **Settings** |
 
-Live prices are fetched from public endpoints (CoinGecko, Yahoo Finance) using only
-the ticker symbols — no quantities or balances are ever sent.
+### Holdings and live prices
+
+Edit holdings on the **Invest** tab: a ticker, the number of units, and optionally a
+price. Every value in the app — Invest totals, net worth, projections — is units ×
+the latest price, so the tabs always agree.
+
+Prices refresh when the app opens, every 5 minutes while it's on screen, when you
+come back to it, and when you tap the status pill. The last good prices are cached
+on the device, so the app still shows sensible values offline.
+
+| Data | Source |
+|---|---|
+| Crypto (major coins) | CoinGecko |
+| AUD/USD | Frankfurter (ECB reference rates) |
+| US and ASX shares | Yahoo Finance via a public CORS relay (Yahoo blocks direct browser requests) |
+
+Only ticker symbols are sent — never quantities or balances. The CORS relays
+(corsproxy.io, allorigins, codetabs) can see which tickers you look up. If no quote is
+available, the price you entered is used.
+
+### Dates, not countdown numbers
+
+Your age and debt-free horizon are stored as dates (**Born** and **Debt-free by**),
+so the retirement and debt-free countdowns tick down day by day. The **Home loan**
+calculator can set the debt-free date for you from your actual repayments.
