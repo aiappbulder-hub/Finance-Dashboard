@@ -225,6 +225,22 @@ available, the price you entered is used.
 
 ### Dates, not countdown numbers
 
-Your age and debt-free horizon are stored as dates (**Born** and **Debt-free by**),
-so the retirement and debt-free countdowns tick down day by day. The **Home loan**
-calculator can set the debt-free date for you from your actual repayments.
+Your age is stored as a date (**Born**), so the retirement countdown ticks down day by day.
+
+### Debt-free countdown
+
+The Overview shows the **number of days until you're debt free**, worked out for you, not typed in.
+
+Under **Plan → Settings → Home** enter your home loan's balance, rate, the repayment you
+actually make (weekly, fortnightly or monthly, extras included) and any offset balance.
+With investment properties, also enter their combined monthly repayment under
+**Investment property**. The app then runs each loan forward one day at a time, the way
+Australian lenders do it: interest accrues daily on balance minus offset and is charged monthly,
+and repayments come off on their own schedule. The countdown shows the date the last loan clears.
+
+The app records the day each balance was entered and works forward from there, so the
+countdown drops by one every day and estimates what you owe today. Whenever you check a
+statement, update the balance and the date firms up.
+
+If a loan has no repayment entered, or the repayment doesn't cover the interest (interest-only),
+the app says so and uses the **Debt-free by** date you set by hand instead.

@@ -213,12 +213,75 @@ function ago(ts){
   return Math.round(s/86400)+'d ago';
 }
 
+// Whole days, as 'YYYY-MM-DD' — used to record when a loan balance was entered.
+function isoDay(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dayParse(v){
+  var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v||''));
+  return m?new Date(+m[1],+m[2]-1,+m[3]):null;
+}
+function today0(){ var d=new Date(); d.setHours(0,0,0,0); return d; }
+function daysUntil(d){ return Math.max(0,Math.round((d-today0())/864e5)); }
+// Same day-of-month k months on, clamped to month end (31 Jan + 1 → 28 Feb).
+function addMonthsClamp(d,k){
+  var t=new Date(d.getFullYear(),d.getMonth()+k,1), last=new Date(t.getFullYear(),t.getMonth()+1,0).getDate();
+  t.setDate(Math.min(d.getDate(),last)); return t;
+}
+function payDate(start,freq,k){
+  return freq==='weekly'?new Date(start.getFullYear(),start.getMonth(),start.getDate()+7*k)
+       : freq==='fortnightly'?new Date(start.getFullYear(),start.getMonth(),start.getDate()+14*k)
+       : addMonthsClamp(start,k);
+}
+
+// ─── Debt-free date ───────────────────────────────────────────
+// Runs a loan forward one day at a time the way Australian lenders do:
+// interest accrues daily on (balance − offset) and is charged monthly,
+// repayments come off on their own weekly / fortnightly / monthly schedule.
+// It starts from the day the balance was entered, not from today, so the
+// payoff date stays put and the countdown really does tick down daily.
+function simLoan(bal,ratePct,offset,pay,freq,asOf){
+  bal=+bal||0; pay=+pay||0;
+  if(bal<=0) return {status:'clear',todayBal:0};
+  if(pay<=0) return {status:'need',todayBal:bal};
+  var dr=Math.max(0,+ratePct||0)/100/365, off=Math.max(0,+offset||0);
+  var t0=today0(), d=new Date(asOf), acc=0, tot=0, todayBal=d>=t0?bal:null;
+  var k=1, nextPay=payDate(asOf,freq,1), m=1, nextChg=addMonthsClamp(asOf,1);
+  for(var i=0;i<365*50;i++){
+    d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);
+    acc+=Math.max(0,bal-off)*dr;
+    if(d>=nextChg){ bal+=acc; tot+=acc; acc=0; m++; nextChg=addMonthsClamp(asOf,m); }
+    if(d>=nextPay){ bal-=pay; k++; nextPay=payDate(asOf,freq,k); }
+    if(todayBal===null&&d>=t0) todayBal=Math.max(0,bal);
+    if(bal<=0.005) return {status:'ok',date:d,interest:tot,todayBal:todayBal===null?0:todayBal};
+  }
+  return {status:'never',todayBal:todayBal===null?bal:todayBal};
+}
+// Investment debt is the sum of each property's own loan; the old single
+// "investment loans" figure only applies to saves with no properties listed.
+function invLoan(s){ return s.props&&s.props.length?s.props.reduce(function(a,p){return a+(+p.loan||0);},0):(+s.totalLoan||0); }
+function asOfDate(v,s){ return dayParse(v)||(s.updatedAt?(function(){var d=new Date(s.updatedAt);d.setHours(0,0,0,0);return d;})():today0()); }
+// Every loan, and the day the last one is cleared. date is null when any
+// loan is missing a repayment (or never clears) — the manual date is used then.
+function debtPlan(s){
+  var loans=[
+    {id:'home',name:'Home loan',bal:+s.pprLoan||0,
+     r:simLoan(s.pprLoan,s.pprRate,s.pprOffset,s.pprPay,s.pprFreq||'monthly',asOfDate(s.pprAsOf,s))},
+    {id:'inv',name:'Investment loans',bal:invLoan(s),
+     r:simLoan(invLoan(s),s.loanRate,0,s.ipPay,'monthly',asOfDate(s.ipAsOf,s))}
+  ].filter(function(l){ return l.bal>0; });
+  var date=null, ok=loans.length>0&&loans.every(function(l){ return l.r.status==='ok'; });
+  if(ok) loans.forEach(function(l){ if(!date||l.r.date>date) date=l.r.date; });
+  return {loans:loans,date:date,auto:!!date,
+    need:loans.filter(function(l){return l.r.status==='need';}).map(function(l){return l.name;}),
+    never:loans.filter(function(l){return l.r.status==='never';}).map(function(l){return l.name;})};
+}
+
 // Derived view of saved state: real age and months-to-debt-free, computed
 // from the stored dates so every tab sees figures that move with time.
 function derive(s){
   var dob=ymParse(s.dob), df=ymParse(s.dfDate), now=new Date();
   var age=dob?Math.floor(((now.getFullYear()-dob.getFullYear())*12+now.getMonth()-dob.getMonth())/12):(s.age||0);
-  return Object.assign({},s,{age:age,dfMonths:df?monthsUntil(df):(s.dfMonths||0)});
+  var plan=debtPlan(s), dfd=plan.date||df;
+  return Object.assign({},s,{age:age,plan:plan,dfMonths:dfd?monthsUntil(dfd):(s.dfMonths||0)});
 }
 
 // ─── Seed historical snapshots from purchase year to this year ─
@@ -297,6 +360,8 @@ var DEFAULT = {
   pprName:'Primary Residence', pprAddr:'', pprNote:'',
   pprBoughtYr:2015, pprBoughtCost:560000, pprReno:30000,
   pprVal:800000, pprLoan:320000, pprRate:6.09, totalLoan:0, loanRate:6.09,
+  // Minimum repayment on $320k at 6.09% over the 14 years left
+  pprPay:2835, pprFreq:'monthly', pprOffset:0, ipPay:0,
   expRatio:22, rentGrow:3.5, propGrow:5.0,
   superBal:130000, superContrib:10860, superGrow:7.0,
   audusd:0.698, invGrow:7.0,
@@ -487,7 +552,7 @@ function importData(file,onDone){
     if(!d||typeof d!=='object'||!Array.isArray(d.props)){ alert("That doesn't look like a dashboard backup."); return; }
     // DEFAULT fills in fields the file predates, but its sample home loan must
     // not be inherited — a backup with no pprLoan means no home loan, not $320k.
-    onDone(Object.assign({},DEFAULT,{pprLoan:0},migrate(d),{demo:false}));
+    onDone(Object.assign({},DEFAULT,{pprLoan:0,pprPay:0},migrate(d),{demo:false}));
   };
   r.onerror=function(){ alert("Couldn't read that file."); };
   r.readAsText(file);
@@ -495,9 +560,29 @@ function importData(file,onDone){
 
 // Anything the user saves is their own data, never a sample — stamp demo:false
 // or the loader would discard it as a stale sample snapshot.
+// Loan figures are a snapshot of one day. Whenever any of them changes,
+// record that day, so the payoff is worked out from when the balance was
+// true — not from whenever the app happens to be opened.
+var HOME_LOAN_KEYS=['pprLoan','pprRate','pprPay','pprFreq','pprOffset'];
+function loanSig(o,inv){
+  if(!o) return '';
+  return inv?[invLoan(o),o.loanRate,o.ipPay].join('|'):HOME_LOAN_KEYS.map(function(k){return o[k];}).join('|');
+}
+function stampLoans(n,was){
+  var prev=null; try{ prev=JSON.parse(localStorage.getItem(SKEY)); }catch(e){}
+  if(prev&&prev.demo) prev=null;
+  var t=isoDay(new Date());
+  [['pprAsOf',false],['ipAsOf',true]].forEach(function(x){
+    var k=x[0], changed=loanSig(prev,x[1])!==loanSig(n,x[1]);
+    // An import carries its own dates — only stamp edits made here.
+    if(changed&&n[k]===(prev&&prev[k])) n[k]=t;
+    else if(!n[k]) n[k]=was?isoDay(new Date(was)):t;   // older save: last-edited day
+  });
+}
 function saveState(next){
   var n=Object.assign({},next,{demo:false,updatedAt:Date.now()});
-  delete n.age; delete n.dfMonths;   // derived from dob / dfDate on every load
+  delete n.age; delete n.dfMonths; delete n.plan;   // derived from dob / dfDate / loans on every load
+  stampLoans(n,next.updatedAt);
   try{ localStorage.setItem(SKEY,JSON.stringify(n)); }catch(e){ alert("Couldn't save — your browser storage may be full or disabled."); }
   return n;
 }
@@ -524,9 +609,7 @@ function cc(n){ return n>=0?'var(--green)':'var(--red)'; }
 // ─── Financial calculations ───────────────────────────────────
 function calc(s,mk) {
   var gr = s.props.reduce(function(a,p){return a+p.rent*52;},0);
-  // Investment debt is the sum of each property's own loan; the old single
-  // "investment loans" figure only applies to saves with no properties listed.
-  var il = s.props.length?s.props.reduce(function(a,p){return a+(+p.loan||0);},0):(s.totalLoan||0);
+  var il = invLoan(s);
   var nr = gr*(1-s.expRatio/100) - il*s.loanRate/100;
   var ipV= s.props.reduce(function(a,p){return a+p.val;},0);
   var pV = ipV+s.pprVal;
@@ -545,7 +628,7 @@ function calc(s,mk) {
   var now= new Date();
   var dob= ymParse(s.dob);
   var rd = dob?new Date(dob.getFullYear()+(+s.retAge||0),dob.getMonth(),1):new Date(now.getFullYear()+yR,now.getMonth(),1);
-  var dd = ymParse(s.dfDate)||new Date(now.getFullYear(),now.getMonth()+s.dfMonths,1);
+  var dd = (s.plan&&s.plan.date)||ymParse(s.dfDate)||new Date(now.getFullYear(),now.getMonth()+s.dfMonths,1);
   var rC = ymdUntil(rd), dC = ymdUntil(dd);
   var r  = s.superGrow/100;
   var sp = Array.from({length:21},function(_,i){
@@ -566,7 +649,7 @@ function calc(s,mk) {
     yR:yR,yS:yS,sa:sa,sp:sp,pp:pp,nwp:nwp,
     gY:ipV?gr/ipV*100:0, pNow:s.target?Math.min(100,Math.max(0,nr/s.target*100)):0,
     pPost:s.target?Math.min(100,Math.max(0,pp[Math.min(Math.ceil(dfY),15)]/s.target*100)):0,
-    rd:rd,dd:dd,
+    rd:rd,dd:dd,dDays:daysUntil(dd),
     rYr:rC[0],rMo:rC[1],rDy:rC[2],
     dYr:dC[0],dMo:dC[1],dDy:dC[2],
     retP:pp[Math.min(yR,15)], retNW:nwp[Math.min(yR,20)]};
@@ -670,6 +753,29 @@ function Countdown(p){
   </div>`;
 }
 
+// Debt-free countdown: a single days-left number, since that is the figure
+// worth watching every day.
+var DAY_OPT={day:'numeric',month:'short',year:'numeric'};
+function DebtDays(p){
+  var c=p.c, pl=p.plan||{loans:[]};
+  if(c.debt<=0) return html`<${Countdown} title="💳 Debt free" done="No debt" />`;
+  var owe=pl.loans.reduce(function(a,l){return a+(l.r.todayBal||0);},0);
+  var ym_=[c.dYr?c.dYr+' yr':'',c.dMo?c.dMo+' mo':''].filter(Boolean).join(' ');
+  return html`<div class="card-sm">
+    <div class="lbl">💳 Debt free</div>
+    <div class="cdu" style="margin-top:10px;padding:12px 2px">
+      <div class="cdn" style="font-size:30px">${c.dDays.toLocaleString('en-AU')}</div>
+      <div class="cdl">DAYS TO GO</div>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-top:8px;text-align:center;line-height:1.45">
+      ${c.dd.toLocaleDateString('en-AU',DAY_OPT)}${ym_?html`<br/>${ym_}`:''}
+      ${pl.auto && owe>0 && html`<br/>~${ff(owe)} owing today`}
+    </div>
+    ${!pl.auto && html`<button class="chip" style="width:100%;margin-top:8px;font-size:12px" onClick=${function(){p.go('plan','set');}}>
+      ${pl.never.length?'Repayments too low to clear':'Add repayments for exact date'}</button>`}
+  </div>`;
+}
+
 // ─── TAB: OVERVIEW ────────────────────────────────────────────
 function TabOverview(p) {
   var s=p.s,c=p.c,ip=p.ip,onI=p.onI;
@@ -710,8 +816,7 @@ function TabOverview(p) {
       <div class="g2" style="margin-bottom:12px">
         <${Countdown} title="🏁 Retirement" v=${[c.rYr,c.rMo,c.rDy]} sub=${'Age '+s.retAge+' · '+c.rd.toLocaleDateString('en-AU',dOpt)}
           done=${c.rd<=new Date()?'Retirement age reached':null} />
-        <${Countdown} title="💳 Debt free" v=${[c.dYr,c.dMo,c.dDy]} sub=${c.dd.toLocaleDateString('en-AU',dOpt)}
-          done=${c.debt<=0?'No debt':null} />
+        <${DebtDays} c=${c} plan=${s.plan} go=${p.go} />
       </div>
 
       ${hasIP ? html`
@@ -1280,7 +1385,13 @@ function yrmo(m){ var y=Math.floor(m/12),r=m%12; return (y?y+' yr ':'')+(r||!y?r
 
 function LoanCalc(p){
   var s=p.s;
-  function mine(){ return {amt:s.pprLoan||s.totalLoan||500000, rate:s.pprRate||s.loanRate||6, years:Math.max(1,Math.ceil(s.dfMonths/12))||30}; }
+  // Seeded with today's estimated balance. This is a what-if tool; the
+  // debt-free date itself is worked out from your real repayments in Settings.
+  function mine(){
+    var h=((s.plan||{}).loans||[]).filter(function(x){return x.id==='home';})[0];
+    var amt=Math.round(h?h.r.todayBal:(s.pprLoan||s.totalLoan||500000));
+    return {amt:amt||500000, rate:s.pprRate||s.loanRate||6, years:h&&h.r.status==='ok'?Math.max(1,Math.ceil(monthsUntil(h.r.date)/12)):30, freq:s.pprFreq||'monthly'};
+  }
   var _l=useState(function(){
     var d=null; try{ d=JSON.parse(localStorage.getItem(LKEY)); }catch(e){}
     return Object.assign({freq:'monthly',extra:0},mine(),d||{});
@@ -1293,7 +1404,6 @@ function LoanCalc(p){
   var lbls=r.base.yearly.map(function(_,i){ return "'"+String(CUR_YR+i).slice(2); });
   var exY=r.ex?r.base.yearly.map(function(_,i){ return r.ex.yearly[i]!=null?r.ex.yearly[i]:0; }):null;
   var vf=function(v){ return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+Math.round(v/1e3)+'k'; };
-  var isMine=+l.amt===+(s.pprLoan||s.totalLoan);
   return html`<div>
     <div class="card">
       <div class="fb" style="margin-bottom:12px">
@@ -1319,7 +1429,6 @@ function LoanCalc(p){
       ${r.ex && html`<div style="margin-top:14px;padding:12px;border-radius:12px;background:var(--green-bg);border:1px solid rgba(52,211,153,.3);font-size:14px;line-height:1.5">
         Paying ${ff(r.extra)}${r.f.suf} extra saves <b style="color:var(--green)">${ff(r.base.interest-r.ex.interest)}</b> in interest and finishes <b style="color:var(--green)">${yrmo(bMo-eMo)}</b> sooner.
       </div>`}
-      ${isMine && html`<button class="btn-n" onClick=${function(){ p.set('dfDate',ym(payoff)); alert('Debt-free date set to '+payoff.toLocaleDateString('en-AU',dOpt)+'.'); }}>Set ${payoff.toLocaleDateString('en-AU',dOpt)} as my debt-free date</button>`}
     </div>
 
     <div class="card">
@@ -1347,6 +1456,15 @@ function TabPlan(p) {
   var hasIP=s.props.length>0;
   var dOpt={month:'short',year:'numeric'};
   var fp={s:s,set:set};
+  var pl=s.plan||{loans:[]};
+  var home=pl.loans.filter(function(l){return l.id==='home';})[0], inv=pl.loans.filter(function(l){return l.id==='inv';})[0];
+  // "As of 12 Nov · ~$41,200 today" — the balance is a snapshot of the day it was typed.
+  function loanHint(l,asOf){
+    if(!l) return '';
+    var d=dayParse(asOf), t=today0();
+    if(!d||d>=t) return 'Balance as of today';
+    return 'Entered '+d.toLocaleDateString('en-AU',{day:'numeric',month:'short'})+(l.r.status==='need'?'':' · ~'+ff(l.r.todayBal)+' today');
+  }
   return html`
     <div class="page">
       <div class="page-title">Plan</div>
@@ -1388,7 +1506,7 @@ function TabPlan(p) {
 
         <div class="sec">Milestones</div>
         ${[
-          {col:'var(--red)',  title:'Debt free',   tgt:c.debt>0?c.dd.toLocaleDateString('en-AU',dOpt):'Done', desc:c.debt>0?'Clear '+fm(c.debt)+' of loans':'No loans outstanding'},
+          {col:'var(--red)',  title:'Debt free',   tgt:c.debt>0?c.dd.toLocaleDateString('en-AU',DAY_OPT):'Done', desc:c.debt>0?'Clear '+fm(c.debt)+' of loans':'No loans outstanding'},
           {col:'var(--gold)', title:'Retire',      tgt:'Age '+s.retAge, desc:'Target '+fm(s.target)+'/yr of income'},
           {col:'var(--blue)', title:'Super access',tgt:'Age '+s.superAge, desc:'Projected balance '+fm(c.sa)},
         ].map(function(x){
@@ -1423,10 +1541,42 @@ function TabPlan(p) {
           <${SetNum} ...${fp} label="Year bought" k="pprBoughtYr" />
           <${SetNum} ...${fp} label="Purchase price" k="pprBoughtCost" />
           <${SetNum} ...${fp} label="Renovations" k="pprReno" />
-          <${SetNum} ...${fp} label="Home loan balance" k="pprLoan" />
+          <${SetNum} ...${fp} label="Home loan balance" hint=${loanHint(home,s.pprAsOf)} k="pprLoan" />
           <${SetNum} ...${fp} label="Home loan rate (%)" k="pprRate" step="0.01" />
-          <${SetMonth} ...${fp} label="Debt-free by" hint=${c.debt>0?s.dfMonths+' months away':'No loans'} k="dfDate" />
+          ${s.pprLoan>0 && html`<${Fragment}>
+            <div class="si"><div><div class="si-l">Repayment</div><div class="si-h">What you actually pay, extras included</div></div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <select class="si-in" style="width:auto;font-family:var(--sans);font-size:14px;padding:9px 8px" value=${s.pprFreq||'monthly'}
+                  onChange=${function(e){set('pprFreq',e.target.value);}}>
+                  ${Object.keys(FREQ).map(function(k){return html`<option key=${k} value=${k}>${FREQ[k].lbl}</option>`;})}
+                </select>
+                <${NumIn} value=${s.pprPay} style="width:110px" onChange=${function(v){set('pprPay',v);}} />
+              </div></div>
+            <${SetNum} ...${fp} label="Offset balance" hint="Savings in an offset account" k="pprOffset" />
+          </${Fragment}>`}
         </div>
+
+        ${c.debt>0 && html`<div class="card">
+          <div class="set-h" style="color:var(--red)">DEBT FREE</div>
+          ${pl.loans.map(function(l){
+            var st=l.r.status;
+            return html`<div class="fb" key=${l.id} style="padding:9px 0;border-bottom:1px solid var(--border)">
+              <div><div style="font-size:15px;font-weight:700">${l.name}</div>
+                <div style="font-size:12px;color:var(--muted)">~${ff(l.r.todayBal)} owing today${st==='ok'?' · '+ff(l.r.interest)+' interest to go':''}</div></div>
+              <div style="font-family:var(--mono);font-size:13px;font-weight:700;text-align:right;color:${st==='ok'?'var(--gold)':'var(--red)'}">
+                ${st==='ok'?l.r.date.toLocaleDateString('en-AU',DAY_OPT):st==='never'?'Repayment too low':'Add repayment'}</div>
+            </div>`;
+          })}
+          ${pl.auto
+            ? html`<div class="fb" style="padding-top:12px"><div style="font-size:14px;font-weight:700;color:var(--muted)">All clear</div>
+                <div style="text-align:right"><div style="font-family:var(--mono);font-size:16px;color:var(--gold);font-weight:700">${c.dd.toLocaleDateString('en-AU',DAY_OPT)}</div>
+                <div style="font-size:12px;color:var(--muted)">${c.dDays.toLocaleString('en-AU')} days</div></div></div>
+              <div class="note" style="margin-top:10px">Worked out daily from your balances, rates, repayments and offset. Update a balance whenever you check your statement and the date firms up.</div>`
+            : html`<div class="note" style="margin-top:10px">${pl.never.length
+                ? 'At the repayment entered, '+pl.never.join(' and ').toLowerCase()+' never clear (interest-only?). Using the date below until then.'
+                : 'Add a repayment for each loan and the date is worked out for you. Until then, set it by hand:'}</div>
+              <${SetMonth} ...${fp} label="Debt-free by" hint=${s.dfMonths+' months away'} k="dfDate" />`}
+        </div>`}
         <div class="card">
           <div class="set-h" style="color:var(--blue)">SUPER</div>
           <${SetNum} ...${fp} label="Balance" k="superBal" />
@@ -1444,6 +1594,7 @@ function TabPlan(p) {
           ${!hasIP && s.totalLoan>0 && html`<${SetNum} ...${fp} label="Investment loans" hint="Add properties to track loans individually" k="totalLoan" />`}
           ${hasIP && html`<div class="note" style="padding:6px 0">Loans are taken from each property — update them on the <b style="color:var(--text)">Properties</b> tab.</div>`}
           <${SetNum} ...${fp} label="Loan rate (%)" k="loanRate" step="0.01" />
+          ${inv && html`<${SetNum} ...${fp} label="Loan repayments ($/mo)" hint=${'All investment loans together · '+loanHint(inv,s.ipAsOf)} k="ipPay" />`}
           <${SetNum} ...${fp} label="Expenses (% of rent)" k="expRatio" step="0.5" />
           <${SetNum} ...${fp} label="Rent growth (%/yr)" k="rentGrow" step="0.1" />
           <${SetNum} ...${fp} label="Property growth (%/yr)" k="propGrow" step="0.1" />
@@ -1563,7 +1714,7 @@ function App() {
       // Sample-only figures are zeroed first so an existing install never
       // inherits them — an older save with no pprLoan has no home loan.
       var up=migrate(d);
-      var out=Object.assign({},DEFAULT,{pprLoan:0,demo:false,updatedAt:0},up);
+      var out=Object.assign({},DEFAULT,{pprLoan:0,pprPay:0,demo:false,updatedAt:0},up);
       if(up!==d) try{localStorage.setItem(SKEY,JSON.stringify(out));}catch(e){}
       return out;
     }catch(e){ return DEFAULT; }
